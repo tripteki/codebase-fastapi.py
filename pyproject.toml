@@ -1,0 +1,15 @@
+[tool.poetry]
+package-mode = false
+name = "codebase"
+version = "1.0.1"
+description = "Project"
+license = "UNLICENSED"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+uvicorn = "^0.34.2"
+fastapi = {extras = ["all"], version = "^0.115.12"}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

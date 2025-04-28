@@ -1,0 +1,109 @@
+php:
+    risky: true
+    version: 8.1
+    preset: laravel
+    finder:
+            exclude:
+                    - ".git"
+                    - "vendor"
+                    - "node_modules"
+                    - ".gradle"
+            not-name:
+                    - "*.blade.php"
+            name:
+                    - "*.php"
+    use-tabs: false
+    tab-width: 4
+js:
+    trailing-commas: es5
+    finder:
+            exclude:
+                    - ".git"
+                    - "vendor"
+                    - "node_modules"
+                    - ".gradle"
+            not-name:
+                    - "*.min.js"
+            name:
+                    - "*.js"
+                    - "*.jsx"
+    use-tabs: false
+    tab-width: 4
+    print-width: 120
+    bracket-same-line: false
+    bracket-spacing: true
+    arrow-parens: avoid
+    double-quotes: true
+    semicolons: true
+ts:
+    trailing-commas: es5
+    finder:
+            exclude:
+                    - ".git"
+                    - "vendor"
+                    - "node_modules"
+                    - ".gradle"
+            name:
+                    - "*.ts"
+    use-tabs: false
+    tab-width: 4
+    print-width: 120
+    bracket-same-line: false
+    bracket-spacing: true
+    arrow-parens: avoid
+    double-quotes: true
+    semicolons: true
+vue:
+    trailing-commas: es5
+    finder:
+            exclude:
+                    - ".git"
+                    - "vendor"
+                    - "node_modules"
+                    - ".gradle"
+            name:
+                    - "*.ts"
+    indent-script-and-style: true
+    whitespace-sensitivity: css
+    use-tabs: false
+    tab-width: 4
+    print-width: 120
+    bracket-same-line: false
+    bracket-spacing: true
+    arrow-parens: always
+    double-quotes: true
+    semicolons: true
+css:
+    finder:
+            exclude:
+                    - ".git"
+                    - "vendor"
+                    - "node_modules"
+                    - ".gradle"
+            name:
+                    - "*.css"
+                    - "*.scss"
+                    - "*.sass"
+                    - "*.less"
+    use-tabs: false
+    tab-width: 4
+    print-width: 120
+    double-quotes: true
+py:
+    version: 3.10
+    preset: pep8
+    options:
+            use-tabs: false
+            tab-width: 4
+            multiline-split-indent: 4
+            print-width: 120
+            join-short-lines: false
+            comment-indent: 4
+    finder:
+            exclude:
+                    - ".git"
+                    - "vendor"
+                    - "node_modules"
+                    - ".gradle"
+            name:
+                    - "*.py"
