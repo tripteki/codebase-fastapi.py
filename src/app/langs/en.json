@@ -1,0 +1,92 @@
+{
+  "_app": {
+    "processor": {
+      "import": {
+        "missing_file": "Missing file content or filename",
+        "unsupported_format": "Unsupported file format: {format}",
+        "empty_file": "File is empty or has no data",
+        "no_data": "No data to validate",
+        "missing_columns": "Missing required columns: {columns}"
+      },
+      "export": {
+        "no_data": "No data to export",
+        "unsupported_type": "Unsupported export type: {type}",
+        "save_failed": "Failed to save export file: {path}"
+      }
+    },
+    "error": {
+      "internal_server_error": "Internal server error"
+    }
+  },
+  "_v1_user": {
+    "auth": {
+      "invalid_credentials": "Invalid credentials",
+      "email_already_exists": "Email already exists",
+      "user_not_found": "User not found",
+      "reset_link_sent": "If the email exists, a reset link has been sent",
+      "missing_token": "Missing token",
+      "invalid_token": "Invalid token",
+      "missing_refresh_token": "Missing refresh token",
+      "request_body_required": "Request body is required",
+      "verification_email_sent": "Verification email sent",
+      "cache_service_unavailable": "Cache service unavailable",
+      "invalid_or_expired_reset_token": "Invalid or expired reset token",
+      "invalid_file_format": "Invalid file format. Only CSV, XLS, XLSX are supported.",
+      "password_mismatch": "Password and password confirmation must match",
+      "password_confirmation_required": "Password confirmation is required when password is provided",
+      "password_required": "Password is required when password confirmation is provided"
+    },
+    "admin": {
+      "invalid_file_format": "Invalid file format. Only CSV, XLS, XLSX are supported.",
+      "import_started": "Import started",
+      "export_started": "Export started",
+      "import_failed": "Import failed",
+      "export_failed": "Export failed",
+      "internal_server_error": "Internal server error"
+    },
+    "common": {
+      "yes": "Yes",
+      "no": "No",
+      "start_greeting": "Hello {name},",
+      "close_greeting": "Best regards,\n{appName}"
+    },
+    "account_registered": {
+      "subject": "Account Registration",
+      "line1": "Thank you for registering with us.",
+      "line2": "Please verify your email address by clicking the link below.",
+      "verify": "Verify Email"
+    },
+    "account_reset": {
+      "subject": "Reset Password",
+      "line1": "You requested to reset your password.",
+      "line2": "Click the link below to reset your password.",
+      "reset": "Reset Password"
+    },
+    "import": {
+      "started": {
+        "message": "Import started"
+      },
+      "completed": {
+        "message": "Import completed successfully. {totalImported} users imported, {totalSkipped} users skipped."
+      },
+      "failed": {
+        "message": "Import failed. Please check the file format and try again."
+      }
+    },
+    "export": {
+      "started": {
+        "message": "Export started"
+      },
+      "completed": {
+        "message": "Export completed successfully. Your file is ready for download."
+      },
+      "failed": {
+        "message": "Export failed. Please try again later."
+      }
+    }
+  },
+  "_v1_notification": {
+    "notification_not_found": "Notification not found",
+    "failed_to_create": "Failed to create notification"
+  }
+}
