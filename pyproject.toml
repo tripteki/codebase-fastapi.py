@@ -1,0 +1,29 @@
+[tool.poetry]
+package-mode = false
+name = "codebase"
+version = "1.0.1"
+description = "Project"
+license = "UNLICENSED"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+uvicorn = "^0.34.2"
+fastapi-limiter = "^0.1.6"
+fastapi = {extras = ["all"], version = "^0.115.12"}
+strawberry-graphql = {extras = ["fastapi"], version = "^0.270.0"}
+python-multipart = "^0.0.20"
+toml = "^0.10.2"
+jinja2 = "^3.1.6"
+redis = "^6.0.0"
+psycopg2 = "^2.9.10"
+sqlmodel = "^0.0.24"
+scrapy = "^2.13.0"
+pandas = "^2.2.3"
+numpy = "^2.2.6"
+transformers = "^4.52.1"
+scikit-learn = "^1.6.1"
+keras = "^3.10.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
