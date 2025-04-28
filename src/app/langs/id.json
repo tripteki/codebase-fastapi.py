@@ -1,0 +1,92 @@
+{
+  "_app": {
+    "processor": {
+      "import": {
+        "missing_file": "File konten atau nama file tidak ada",
+        "unsupported_format": "Format file tidak didukung: {format}",
+        "empty_file": "File kosong atau tidak ada data",
+        "no_data": "Tidak ada data untuk divalidasi",
+        "missing_columns": "Kolom yang diperlukan tidak ada: {columns}"
+      },
+      "export": {
+        "no_data": "Tidak ada data untuk diekspor",
+        "unsupported_type": "Tipe ekspor tidak didukung: {type}",
+        "save_failed": "Gagal menyimpan file ekspor: {path}"
+      }
+    },
+    "error": {
+      "internal_server_error": "Terjadi kesalahan pada server"
+    }
+  },
+  "_v1_user": {
+    "auth": {
+      "invalid_credentials": "Kredensial tidak valid",
+      "email_already_exists": "Email sudah terdaftar",
+      "user_not_found": "Pengguna tidak ditemukan",
+      "reset_link_sent": "Jika email terdaftar, tautan reset telah dikirim",
+      "missing_token": "Token tidak ditemukan",
+      "invalid_token": "Token tidak valid",
+      "missing_refresh_token": "Refresh token tidak ditemukan",
+      "request_body_required": "Request body diperlukan",
+      "verification_email_sent": "Email verifikasi telah dikirim",
+      "cache_service_unavailable": "Layanan cache tidak tersedia",
+      "invalid_or_expired_reset_token": "Token reset tidak valid atau telah kedaluwarsa",
+      "invalid_file_format": "Format file tidak valid. Hanya CSV, XLS, XLSX yang didukung.",
+      "password_mismatch": "Password dan konfirmasi password harus sama",
+      "password_confirmation_required": "Konfirmasi password diperlukan ketika password diberikan",
+      "password_required": "Password diperlukan ketika konfirmasi password diberikan"
+    },
+    "admin": {
+      "invalid_file_format": "Format file tidak valid. Hanya CSV, XLS, XLSX yang didukung.",
+      "import_started": "Import dimulai",
+      "export_started": "Export dimulai",
+      "import_failed": "Import gagal",
+      "export_failed": "Export gagal",
+      "internal_server_error": "Terjadi kesalahan pada server"
+    },
+    "common": {
+      "yes": "Ya",
+      "no": "Tidak",
+      "start_greeting": "Halo {name},",
+      "close_greeting": "Salam hormat,\n{appName}"
+    },
+    "account_registered": {
+      "subject": "Registrasi Akun",
+      "line1": "Terima kasih telah mendaftar dengan kami.",
+      "line2": "Silakan verifikasi alamat email Anda dengan mengklik tautan di bawah ini.",
+      "verify": "Verifikasi Email"
+    },
+    "account_reset": {
+      "subject": "Reset Password",
+      "line1": "Anda meminta untuk mereset password Anda.",
+      "line2": "Klik tautan di bawah untuk mereset password Anda.",
+      "reset": "Reset Password"
+    },
+    "import": {
+      "started": {
+        "message": "Import dimulai"
+      },
+      "completed": {
+        "message": "Import berhasil diselesaikan. {totalImported} pengguna diimpor, {totalSkipped} pengguna dilewati."
+      },
+      "failed": {
+        "message": "Import gagal. Silakan periksa format file dan coba lagi."
+      }
+    },
+    "export": {
+      "started": {
+        "message": "Export dimulai"
+      },
+      "completed": {
+        "message": "Export berhasil diselesaikan. File Anda siap diunduh."
+      },
+      "failed": {
+        "message": "Export gagal. Silakan coba lagi nanti."
+      }
+    }
+  },
+  "_v1_notification": {
+    "notification_not_found": "Notifikasi tidak ditemukan",
+    "failed_to_create": "Gagal membuat notifikasi"
+  }
+}

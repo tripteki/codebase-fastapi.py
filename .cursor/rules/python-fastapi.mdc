@@ -1,0 +1,156 @@
+---
+description: FastAPI implementation patterns — lifespan, events, DTOs, GraphQL, realtime
+globs: "src/**/*.py"
+alwaysApply: false
+---
+
+# FastAPI Implementation Patterns
+
+## Application lifespan
+
+`main.py` wires everything via an async context manager:
+
+```python
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    await setup_logging()
+    await setup_cache()
+    await setup_databases()
+    register_event_listeners()
+    start_queue_processor()
+    start_scheduler()
+    yield
+    # Shutdown
+    await teardown_databases()
+```
+
+- Do not add startup logic outside the lifespan function
+- Each setup step should be idempotent
+
+## Domain module layering
+
+```
+Controller (route handler) → Service → Repository → Model (SQLModel)
+     ↓
+   DTO (validator for input, transformer for output)
+     ↓
+   Event → Listener (side effects, broadcasts)
+     ↓
+   Processor (async RQ queue jobs)
+```
+
+- Controllers: thin route definitions with `Depends()` for auth
+- Services: business logic, emit events via `@OnEvent` decorator
+- Repositories: database queries only (SQLModel sessions)
+
+## Event-driven architecture
+
+```python
+# Event class
+class UserAuthLoggedInEvent:
+    def __init__(self, user_id: int, token: str):
+        self.user_id = user_id
+        self.token = token
+
+# Listener
+@OnEvent("v1.user.auth.logged_in")
+async def handle_logged_in(event: UserAuthLoggedInEvent):
+    # Side effects
+    pass
+```
+
+### Event naming
+- Format: `v1.{domain}.{action}` — must match NestJS and Laravel exactly
+- Examples: `v1.user.admin.imported`, `v1.user.auth.registered`
+
+## Realtime (Socket.IO)
+
+```python
+# src/app/bases/app_realtime.py
+async def emitToUser(user_id: int, event: str, data: dict):
+    # LAZY IMPORT — do not import app_ws_router at module level
+    from src.app.routes.app_ws_router import sio
+    await sio.emit(event, data, room=f"user.{user_id}")
+```
+
+- Room-based emits to `user.{id}`
+- Event names: `v1.user.admin.*`
+- **Critical:** lazy import between `app_realtime` and `app_ws_router` to prevent circular import (breaks all 37 tests)
+
+## DTO patterns
+
+```python
+# Validator DTO (input)
+class UserLoginValidatorDto(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=8)
+
+# Transformer DTO (output)
+class UserTransformerDto(BaseModel):
+    id: int
+    email: str
+    name: str
+
+    class Config:
+        from_attributes = True
+```
+
+- Validator DTOs: Pydantic validation on request body
+- Transformer DTOs: shape response data, use `from_attributes = True` for ORM models
+- Use `model_dump()` (Pydantic v2) — not deprecated `.dict()`
+
+## Exception handling
+
+```python
+# src/app/exceptions/ — custom handlers return consistent shape
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=422,
+        content={"detail": [...]},  # FastAPI-native format
+    )
+```
+
+## GraphQL (Strawberry)
+
+- Resolvers in `src/v1/graphql/{domain}/`
+- Share service layer with REST controllers
+- Separate GraphQL types from REST DTOs
+- Strawberry schema registered in app routes
+
+## RQ queue processors
+
+```python
+# processors/ — async job handlers
+def process_user_admin_import(file_path: str, user_id: int):
+    # Process import, emit event on completion
+    pass
+```
+
+- Started via `poetry run python3 ./src/cli.py queue:work`
+- Emit domain events after job completes
+
+## Config classes
+
+```python
+# src/app/configs/
+class DatabaseConfig(AppConfig):
+    postgre_uri: str = os.getenv("DATABASE_POSTGRE_URI")
+    mongo_uri: str = os.getenv("DATABASE_MONGO_URI")
+```
+
+- All config classes extend `AppConfig` base in `src/app/bases/`
+- Access via dependency injection, not raw `os.getenv()` in services
+
+## Common pitfalls (avoid)
+
+| Problem | Fix |
+|---------|-----|
+| Circular import app_realtime ↔ app_ws_router | Lazy import inside function body |
+| `.dict()` deprecation warning | Use `.model_dump()` (Pydantic v2) |
+| Different error shape than siblings | Return `{ detail: [...] }` for 422 |
+| Throttle in development | Guard FastAPI-Limiter with `APP_ENV` check |
+| Business logic in controller | Move to service layer |
+| Top-level cross-import realtime ↔ router | Always defer import to function scope |
+| GraphQL logic duplicated from REST | Call shared service method |
