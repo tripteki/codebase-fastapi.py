@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        .verify {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            color: white;
+            background-color: blue;
+            transition: background-color 0.3s;
+        }
+
+        .verify:hover {
+            background-color: darkblue;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h2>{{ start_greeting }}</h2>
+    </header>
+
+    <main>
+        <p>{{ line1 }}</p>
+        <p><a href="{{ verificationUrl }}" class="verify">{{ verify }}</a></p>
+        <p>{{ line2 }}</p>
+    </main>
+
+    <footer>
+        <hr />
+        <h2 style="text-transform: capitalize;">{{ close_greeting }}</h2>
+    </footer>
+</body>
+</html>
