@@ -1,35 +1,30 @@
 from datetime import datetime
 from typing import Dict
-import asyncio
 from sqlmodel import Session, select
 from src.app.bases.app_database import AppDatabase
 from src.app.bases.app_event import getEventEmitter
-from src.app.bases.app_event_listener import AppEventListener
-from src.app.bases.app_queue import Processor, Process
-from src.app.constants.queue_constants import USER_ADMIN_QUEUE
 from src.app.processors.app_export_processor import AppExportProcessor
 from src.v1.api.user.databases.models.user_model import User
 from src.v1.api.user.events.user.admin.exported.event import UserAdminExportedEvent
 from src.v1.api.user.events.user.admin.exported_failed.event import UserAdminExportedFailedEvent
 
-@Processor (USER_ADMIN_QUEUE)
 class UserAdminExportProcessor (AppExportProcessor):
     """
     UserAdminExportProcessor (AppExportProcessor)
     """
+
     @staticmethod
-    @Process ("export")
-    def handle (data: Dict[str, object]) -> None:
+    async def run (userId: str, export_type: str) -> None:
         """
         Args:
-            data (Dict[str, object])
+            userId (str)
+            export_type (str)
         Returns:
             None
         """
         try:
-            AppEventListener.loadListeners (None)
-            userId = data.get ("userId")
-            exportType = data.get ("type", "csv")
+            validTypes = ["csv", "xls", "xlsx"]
+            normalizedType = export_type.lower () if export_type.lower () in validTypes else "csv"
 
             engine = AppDatabase.databasePostgresql ()
             session = Session (engine)
@@ -54,12 +49,12 @@ class UserAdminExportProcessor (AppExportProcessor):
 
                 sanitized_data = AppExportProcessor.sanitize_data (export_data)
 
-                filename = f"users_export_{datetime.now ().strftime ('%Y%m%d_%H%M%S')}.{exportType}"
+                filename = f"users_export_{datetime.now ().strftime ('%Y%m%d_%H%M%S')}.{normalizedType}"
 
                 result = AppExportProcessor.export_file (
                     data=sanitized_data,
                     filename=filename,
-                    file_type=exportType,
+                    file_type=normalizedType,
                     subfolder="export",
                     sheet_name="Users"
                 )
@@ -71,7 +66,7 @@ class UserAdminExportProcessor (AppExportProcessor):
                     fileUrl=result["fileUrl"],
                     filePath=result["filePath"]
                 )
-                asyncio.run (eventEmitter.emit ("v1.user.admin.exported", event))
+                await eventEmitter.emit ("v1.user.admin.exported", event)
 
             finally:
                 session.close ()
@@ -79,8 +74,7 @@ class UserAdminExportProcessor (AppExportProcessor):
         except Exception as e:
             eventEmitter = getEventEmitter ()
             event = UserAdminExportedFailedEvent (
-                userId=userId if 'userId' in locals () else None,
+                userId=userId,
                 error=str (e)
             )
-            asyncio.run (eventEmitter.emit ("v1.user.admin.exported-failed", event))
-            raise
+            await eventEmitter.emit ("v1.user.admin.exported-failed", event)

@@ -1,6 +1,5 @@
 from typing import Dict, Optional
 from src.app.bases.app_queue import AppQueue
-from src.app.constants.queue_constants import PRIORITY_QUEUES, USER_ADMIN_QUEUE
 from rq.job import Job
 
 def enqueue_with_priority (

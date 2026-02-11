@@ -1,21 +1,23 @@
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
-from fastapi import HTTPException, status
+from fastapi import BackgroundTasks, HTTPException, status
 from sqlmodel import Session, select
 from src.app.bases.app_auth import AppAuth
 from src.app.bases.app_database import AppDatabase
 from src.app.bases.app_disk import AppDisk
 from src.app.bases.app_event import getEventEmitter
 from src.app.bases.app_i18n import AppI18n
-from src.app.bases.app_queue import AppQueue
-from src.app.constants.queue_constants import USER_ADMIN_QUEUE
+from src.app.processors.app_export_processor import AppExportProcessor
+from src.app.processors.app_import_processor import AppImportProcessor
 from src.app.repositories.app_repository import OffsetPagination, OffsetPaginationType
 from src.v1.api.user.databases.models.user_model import User
 from src.v1.api.user.dtos.user_transformer_dto import UserTransformerDto
 from src.v1.api.user.dtos.user_validator_dto import UserCreateValidatorDto, UserUpdateValidatorDto
 from src.v1.api.user.events.user.admin.activated.event import UserAdminActivatedEvent
 from src.v1.api.user.events.user.admin.deactivated.event import UserAdminDeactivatedEvent
+from src.v1.api.user.processors.user_admin_import_processor import UserAdminImportProcessor
+from src.v1.api.user.processors.user_admin_export_processor import UserAdminExportProcessor
 from src.v1.api.user.repositories.user_auth_repository import UserAuthRepository
 from src.v1.api.user.repositories.user_admin_repository import UserAdminRepository
 
@@ -184,7 +186,7 @@ class UserAdminService:
         return UserTransformerDto.fromUser (user)
 
     @staticmethod
-    async def import_users (userId: str, fileContent: bytes, filename: str) -> str:
+    async def import_users (background_tasks: BackgroundTasks, userId: str, fileContent: bytes, filename: str) -> str:
         """
         Args:
             userId (str)
@@ -194,17 +196,16 @@ class UserAdminService:
             str
         """
         i18n = AppI18n.i18n ()
-
-        AppQueue.enqueue (USER_ADMIN_QUEUE, "import", {
-            "userId": userId,
-            "file": filename,
-            "fileContent": fileContent
-        })
-
+        background_tasks.add_task (
+            UserAdminImportProcessor.run,
+            userId,
+            fileContent,
+            filename,
+        )
         return i18n.t ("_v1_user.import.started.message")
 
     @staticmethod
-    async def export_users (userId: str, export_type: str) -> str:
+    async def export_users (background_tasks: BackgroundTasks, userId: str, export_type: str) -> str:
         """
         Args:
             userId (str)
@@ -213,13 +214,9 @@ class UserAdminService:
             str
         """
         i18n = AppI18n.i18n ()
-
-        validTypes = ["csv", "xls", "xlsx"]
-        normalizedType = export_type.lower () if export_type.lower () in validTypes else "csv"
-
-        AppQueue.enqueue (USER_ADMIN_QUEUE, "export", {
-            "userId": userId,
-            "type": normalizedType
-        })
-
+        background_tasks.add_task (
+            UserAdminExportProcessor.run,
+            userId,
+            export_type,
+        )
         return i18n.t ("_v1_user.export.started.message")

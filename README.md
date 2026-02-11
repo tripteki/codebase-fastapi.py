@@ -151,18 +151,6 @@ The server will start at `http://localhost:8000` with the following features ena
 poetry run uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4
 ```
 
-#### Background Workers
-
-Start Redis Queue workers to process background jobs:
-
-```bash
-# Start queue worker
-poetry run python3 ./src/cli.py queue:work
-
-# Start with specific queue
-poetry run python3 ./src/cli.py queue:work --queue default
-```
-
 ### API Documentation
 
 #### Swagger UI (REST API)

@@ -4,7 +4,7 @@ import sys
 from src.app.bases.app_console import Command
 from src.app.bases.app_event_listener import AppEventListener
 from src.app.bases.app_queue_processor import AppQueueProcessor
-from src.app.constants.queue_constants import ALL_QUEUES, USER_ADMIN_QUEUE, NOTIFICATION_QUEUE
+from src.app.constants.queue_constants import ALL_QUEUES
 
 @Command (name="queue:work", help="Start queue worker for processing background jobs")
 @click.argument ("queues", nargs=-1)

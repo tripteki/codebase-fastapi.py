@@ -1,6 +1,7 @@
 from typing import Optional
 from fastapi import (
     APIRouter,
+    BackgroundTasks,
     Body,
     Depends,
     File,
@@ -221,6 +222,7 @@ Bob Wilson,bob@example.com,mypassword789
     )
 )
 async def import_users (
+    background_tasks: BackgroundTasks,
     file: UploadFile = File (..., description="Upload CSV, XLSX, or XLS file containing user data with columns: name, email, password"),
     current_user: User = Depends (get_current_user)
 ) -> str:
@@ -232,7 +234,7 @@ async def import_users (
     """
     try:
         fileContent = await file.read ()
-        return await UserAdminService.import_users (current_user.id, fileContent, file.filename)
+        return await UserAdminService.import_users (background_tasks, current_user.id, fileContent, file.filename)
     except HTTPException:
         raise
     except Exception as e:
@@ -285,6 +287,7 @@ id,name,email,email_verified_at,created_at,updated_at
     )
 )
 async def export_users (
+    background_tasks: BackgroundTasks,
     export_type: Optional[str] = Query (default="csv", description="File format: csv (default), xlsx, or xls", enum=["csv", "xls", "xlsx"]),
     current_user: User = Depends (get_current_user)
 ) -> str:
@@ -295,7 +298,7 @@ async def export_users (
     The export will be processed asynchronously and you will receive a notification with the download link.
     """
     try:
-        return await UserAdminService.export_users (current_user.id, export_type)
+        return await UserAdminService.export_users (background_tasks, current_user.id, export_type)
     except HTTPException:
         raise
     except Exception as e:
