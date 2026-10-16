@@ -12,6 +12,7 @@ class UserTransformerDto:
     Attributes:
         id (str)
         name (str)
+        full_name (Optional[str])
         email (str)
         email_verified_at (Optional[datetime])
         created_at (datetime)
@@ -20,6 +21,7 @@ class UserTransformerDto:
     """
     id: str
     name: str
+    full_name: Optional[str] = None
     email: str
     email_verified_at: Optional[datetime] = None
     created_at: datetime
@@ -37,6 +39,7 @@ class UserTransformerDto:
         return cls (
             id=user.id,
             name=user.name,
+            full_name=getattr (user, "full_name", None),
             email=user.email,
             email_verified_at=user.email_verified_at,
             created_at=user.created_at,

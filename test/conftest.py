@@ -11,6 +11,8 @@ from src.app.configs.database_config import DatabaseConfig
 from src.app.bases.app_database import AppDatabase
 from src.app.bases.app_auth import AppAuth
 from src.v1.api.user.databases.models.user_model import User
+from src.v1.api.user.dtos.user_role_enum import UserRoleEnum
+from src.v1.api.user.repositories.user_acl_repository import UserAclRepository
 from src.v1.api.user.databases.models.password_reset_token_model import PasswordResetToken
 from src.v1.api.notification.databases.models.notification_model import Notification
 from src.v1.api.user.databases.models.push_subscription_model import PushSubscription
@@ -95,6 +97,8 @@ def test_user (test_db: Session) -> Dict:
         test_db.add (new_user)
         test_db.commit ()
         test_db.refresh (new_user)
+
+    asyncio.run (UserAclRepository.syncUserRole (user_id, UserRoleEnum.Superadmin.value))
 
     return {
         "id": user_id,

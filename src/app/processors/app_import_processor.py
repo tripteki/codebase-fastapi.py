@@ -26,12 +26,12 @@ class AppImportProcessor:
         i18n = AppI18n.i18n ()
         file_extension = Path (filename).suffix.lower ()
 
-        if file_extension == ".csv":
+        if file_extension in [".csv", ".txt"]:
             content = file_content.decode ("utf-8") if isinstance (file_content, bytes) else file_content
-            df = pd.read_csv (io.StringIO (content))
+            df = pd.read_csv (io.StringIO (content), dtype=str)
         elif file_extension in [".xlsx", ".xls"]:
             content = io.BytesIO (file_content) if isinstance (file_content, bytes) else file_content
-            df = pd.read_excel (content)
+            df = pd.read_excel (content, dtype=str)
         else:
             raise ValueError (i18n.t ("_app.processor.import.unsupported_format", args={"format": file_extension}))
 

@@ -115,7 +115,7 @@ async def interests (
 @userProfileRouter.get (
     "/me/accesses",
     status_code=Status.OK,
-    dependencies=[rateLimit (times=10, seconds=60)],
+    dependencies=[rateLimit (times=180, seconds=60)],
     response_model=UserAccessTransformerDto,
     responses=getStandardResponses (unauthorized=True, forbidden=True),
 )

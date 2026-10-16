@@ -2,11 +2,12 @@ from pathlib import Path
 from typing import Optional
 from uuid import uuid4
 from fastapi import HTTPException, UploadFile, status
+from src.app.bases.app_i18n import AppI18n
+from src.app.utils.app_upload_guard import readImageUpload
 from src.v1.api.user.dtos.user_avatar_enum import (
     AVATAR_ALLOWED_EXTENSIONS,
     AVATAR_ALLOWED_MIME_TYPES,
     AVATAR_DIRECTORY,
-    AVATAR_MAX_SIZE_BYTES,
 )
 
 def validateAvatar (file: UploadFile) -> None:
@@ -25,8 +26,9 @@ def validateAvatar (file: UploadFile) -> None:
             detail=[{
                 "type": "value_error",
                 "loc": ["body", "avatar"],
-                "msg": "Avatar must be a JPEG, PNG, GIF, or WebP image",
+                "msg": AppI18n.i18n ().t ("_app.upload.image_type"),
                 "input": file.filename,
+                "ctx": {},
             }],
         )
 
@@ -36,8 +38,9 @@ def validateAvatar (file: UploadFile) -> None:
             detail=[{
                 "type": "value_error",
                 "loc": ["body", "avatar"],
-                "msg": "Avatar must be a JPEG, PNG, GIF, or WebP image",
+                "msg": AppI18n.i18n ().t ("_app.upload.image_type"),
                 "input": file.content_type,
+                "ctx": {},
             }],
         )
 
@@ -49,24 +52,10 @@ async def saveAvatar (file: UploadFile) -> str:
         str
     """
     validateAvatar (file)
-    content = await file.read ()
-
-    if len (content) > AVATAR_MAX_SIZE_BYTES:
-        raise HTTPException (
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=[{
-                "type": "value_error",
-                "loc": ["body", "avatar"],
-                "msg": f"Avatar must not exceed {AVATAR_MAX_SIZE_BYTES // (1024 * 1024)}MB",
-                "input": file.filename,
-            }],
-        )
-
+    content, extension = await readImageUpload (file, "avatar")
     AVATAR_DIRECTORY.mkdir (parents=True, exist_ok=True)
-    extension = Path (file.filename or "").suffix.lower () or ".jpg"
     filename = f"{uuid4 ().hex}{extension}"
-    destination = AVATAR_DIRECTORY / filename
-    destination.write_bytes (content)
+    (AVATAR_DIRECTORY / filename).write_bytes (content)
     return f"avatars/{filename}"
 
 def deleteAvatarIfExists (avatarPath: Optional[str]) -> None:

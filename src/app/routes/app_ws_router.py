@@ -4,7 +4,7 @@ from urllib.parse import parse_qs
 from fastapi import FastAPI
 from sqlmodel import Session, select
 from src.app.bases.app_realtime import userRoom
-from src.app.schemas.app_schema import createGraphQLRouter
+# from src.app.schemas.app_schema import createGraphQLRouter
 from src.app.configs.cache_config import CacheConfig
 from src.app.bases.app_auth import AppAuth
 from src.app.bases.app_database import AppDatabase
@@ -98,8 +98,8 @@ class AppWsRouter:
         Returns:
             None
         """
-        graphqlRouter = createGraphQLRouter ()
-        app.include_router (graphqlRouter)
+        # graphqlRouter = createGraphQLRouter ()
+        # app.include_router (graphqlRouter)
         socketioServer = getSocketIOServer ()
         app.state.ws = socketioServer
         socketioApp = socketio.ASGIApp (socketioServer, socketio_path="")

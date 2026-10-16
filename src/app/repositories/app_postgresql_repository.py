@@ -41,8 +41,11 @@ class AppPostgresqlRepository (Generic[T]):
         """
         order_by = []
         for order in orders:
-            direction = text (f"{order.field} {order.direction}")
-            order_by.append (direction)
+            field = order.get ("field") if isinstance (order, dict) else order.field
+            direction = order.get ("direction") if isinstance (order, dict) else order.direction
+            if direction not in ("asc", "desc"):
+                direction = "asc"
+            order_by.append (text (f"{field} {direction}"))
         return {"order_by": order_by}
 
     def filter (self, filters: List[Filterization]) -> Dict[str, object]:
@@ -53,9 +56,9 @@ class AppPostgresqlRepository (Generic[T]):
             Dict[str, object]
         """
         conditions = {}
-        for f in filters:
-            field = f.field
-            search = f.search
+        for item in filters:
+            field = item.get ("field") if isinstance (item, dict) else item.field
+            search = item.get ("search") if isinstance (item, dict) else item.search
             conditions[field] = {"contains": search}
         return conditions
 
@@ -103,6 +106,7 @@ class AppPostgresqlRepository (Generic[T]):
             last_page = (total + per_page - 1) // per_page if total > 0 else 1
 
             return OffsetPagination (
+                total=int (total),
                 totalPage=last_page,
                 perPage=per_page,
                 currentPage=current_page,
@@ -117,6 +121,7 @@ class AppPostgresqlRepository (Generic[T]):
             self.logger.warning (f"Pagination error: {e}")
 
             return OffsetPagination (
+                total=0,
                 totalPage=1,
                 perPage=page.limitPage,
                 currentPage=page.currentPage,

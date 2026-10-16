@@ -82,12 +82,12 @@ async def emitToUser(user_id: int, event: str, data: dict):
 
 ```python
 # Validator DTO (input)
-class UserLoginValidatorDto(BaseModel):
+class UserLoginValidatorDto (BaseModel):
     email: EmailStr
-    password: str = Field(min_length=8)
+    password: str = Field (..., min_length=8)
 
 # Transformer DTO (output)
-class UserTransformerDto(BaseModel):
+class UserTransformerDto (BaseModel):
     id: int
     email: str
     name: str
@@ -114,10 +114,9 @@ async def validation_exception_handler(request, exc):
 
 ## GraphQL (Strawberry)
 
-- Resolvers in `src/v1/graphql/{domain}/`
-- Share service layer with REST controllers
-- Separate GraphQL types from REST DTOs
-- Strawberry schema registered in app routes
+- Resolvers in `src/v1/graphql/{domain}/` stay in the tree
+- Do not mount the router. `createGraphQLRouter` stays commented out in `app_ws_router.py`
+- If it is mounted later, share the REST service layer and keep GraphQL types separate from REST DTOs
 
 ## RQ queue processors
 
@@ -153,4 +152,4 @@ class DatabaseConfig(AppConfig):
 | Throttle in development | Guard FastAPI-Limiter with `APP_ENV` check |
 | Business logic in controller | Move to service layer |
 | Top-level cross-import realtime ↔ router | Always defer import to function scope |
-| GraphQL logic duplicated from REST | Call shared service method |
+| Mounting `/graphql` | Leave the router commented out |

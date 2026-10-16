@@ -16,10 +16,25 @@ from src.v1.api.user.dtos.user_validator_dto import (
     UserIdentifierEmailDto,
     UserResetterUpdateValidatorDto,
 )
+from src.v1.api.user.repositories.user_auth_repository import UserAuthRepository
 from src.v1.api.user.services.user_auth_service import UserAuthService
 from src.v1.api.user.services.user_profile_service import UserProfileService
 
 userAuthRouter = APIRouter (prefix="/api/v1/auth", tags=["UserAuth"])
+
+async def resetTokenGuard (email: str, signed: str = Query (..., description="The signed token")) -> None:
+    """
+    Args:
+        email (str)
+        signed (str)
+    Returns:
+        None
+    """
+    if not await UserAuthRepository.hasResetToken (signed, email):
+        raise HTTPException (
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=AppI18n.i18n ().t ("_v1_user.auth.invalid_or_expired_reset_token"),
+        )
 
 @userAuthRouter.post (
     "/login",
@@ -85,14 +100,14 @@ async def refresh (
     if not refreshToken:
         raise HTTPException (
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=i18n.t ("_v1_user.auth.missing_refresh_token"),
+            detail=i18n.t ("_v1_user.auth.missing_token"),
         )
     return await UserAuthService.refresh (refreshToken)
 
 @userAuthRouter.get (
     "/me",
     status_code=Status.OK,
-    dependencies=[rateLimit (times=10, seconds=60), Depends (security)],
+    dependencies=[rateLimit (times=60, seconds=60), Depends (security)],
     response_model=UserMeTransformerDto,
     responses=getStandardResponses (unauthorized=True, forbidden=True)
 )
@@ -161,10 +176,25 @@ async def reverify (
     """
     return await UserAuthService.reverify (current_user.id)
 
+@userAuthRouter.post (
+    "/resend-verification",
+    status_code=Status.OK,
+    dependencies=[rateLimit (times=3, seconds=60)],
+    response_model=str,
+    responses=getStandardResponses (bad_request=True, unvalidated=True),
+)
+async def resendVerification (
+    dto: UserIdentifierEmailDto = Body (...),
+) -> str:
+    """
+    Resend Email Verification By Email
+    """
+    return await UserAuthService.reverifyByEmail (dto.email)
+
 @userAuthPublicRouter.post (
     "/reset-password/{email}",
     status_code=Status.OK,
-    dependencies=[rateLimit (times=10, seconds=60), Depends (urlGuard)],
+    dependencies=[rateLimit (times=10, seconds=60), Depends (urlGuard), Depends (resetTokenGuard)],
     response_model=UserTransformerDto,
     responses=getStandardResponses (forbidden=True, not_found=True, unvalidated=True)
 )

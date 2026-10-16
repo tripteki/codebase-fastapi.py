@@ -9,7 +9,7 @@ class AppCache:
     AppCache
 
     Attributes:
-        _engine (Optional[redis.asyncio.Redis])
+        _engine (Optional[cache_redis.Redis])
     """
     _engine: Optional[cache_redis.Redis] = None
 
@@ -20,7 +20,7 @@ class AppCache:
             cls
             app (FastAPI)
         Returns:
-            Engine
+            cache_redis.Redis
         """
         if cls._engine is None:
             cacheConfig = CacheConfig.config ()

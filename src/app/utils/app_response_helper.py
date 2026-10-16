@@ -19,6 +19,7 @@ def getPaginationResponses (
     responses: Dict[int, Dict[str, object]] = {}
 
     pagination_example = {
+        "total": 0,
         "totalPage": 0,
         "perPage": 0,
         "currentPage": 0,

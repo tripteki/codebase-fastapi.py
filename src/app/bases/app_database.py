@@ -14,9 +14,9 @@ class AppDatabase:
 
     Attributes:
         _database_postgresql (None)
-        _database_mongonosql (None)
-        database_mongonosql_session (None)
-        database_postgresql_session (Depends (databasePostgresqlSession))
+        _database_mongonosql (Optional[AsyncIOMotorClient])
+        database_mongonosql_session (Optional[AsyncIOMotorDatabase])
+        database_postgresql_session (Annotated[Session, Depends (databasePostgresqlSession)])
     """
     _database_postgresql = None
     _database_mongonosql: Optional[AsyncIOMotorClient] = None
@@ -72,22 +72,24 @@ class AppDatabase:
         return cls._database_postgresql
 
     @classmethod
-    def databaseMongonosqlDatabase (cls, databaseName: Optional[str] = None) -> AsyncIOMotorDatabase:
+    def databaseMongonosqlDatabase (cls, databaseName: Optional[str] = None) -> Optional[AsyncIOMotorDatabase]:
         """
         Args:
             cls
             databaseName (Optional[str])
         Returns:
-            AsyncIOMotorDatabase
+            Optional[AsyncIOMotorDatabase]
         """
         client = cls.databaseMongonosql ()
+        if client is None:
+            return None
         if databaseName:
             return client[databaseName]
         if cls.database_mongonosql_session is None:
             databaseConfig = DatabaseConfig.config ()
-            uri = databaseConfig.mongo_uri ()
+            uri = str (databaseConfig.database_mongo_uri or "").strip ()
             parsed = urlparse (uri)
-            db_name = parsed.path.lstrip ('/') if parsed.path else "test"
+            db_name = parsed.path.lstrip ("/") if parsed.path else "test"
             cls.database_mongonosql_session = client[db_name]
         return cls.database_mongonosql_session
 
@@ -105,16 +107,19 @@ class AppDatabase:
             cls.database_mongonosql_session = None
 
     @classmethod
-    def databaseMongonosql (cls) -> AsyncIOMotorClient:
+    def databaseMongonosql (cls) -> Optional[AsyncIOMotorClient]:
         """
         Args:
             cls
         Returns:
-            AsyncIOMotorClient
+            Optional[AsyncIOMotorClient]
         """
         if cls._database_mongonosql is None:
             databaseConfig = DatabaseConfig.config ()
-            cls._database_mongonosql = AsyncIOMotorClient (databaseConfig.mongo_uri ())
+            mongoUri = str (databaseConfig.database_mongo_uri or "").strip ()
+            if not mongoUri:
+                return None
+            cls._database_mongonosql = AsyncIOMotorClient (mongoUri)
         return cls._database_mongonosql
 
     database_postgresql_session: Annotated[Session, Depends (databasePostgresqlSession)] = Depends (databasePostgresqlSession)

@@ -3,11 +3,18 @@ from typing import Optional, List
 from typing_extensions import Self
 from pydantic import BaseModel, EmailStr, Field
 from src.v1.api.user.databases.models.user_model import User
+from src.v1.api.user.dtos.user_role_enum import UserRoleEnum
 from src.v1.api.user.databases.models.profile_model import Profile
 
 class UserProfileTransformerDto (BaseModel):
     """
     UserProfileTransformerDto (BaseModel)
+
+    Attributes:
+        full_name (Optional[str])
+        avatar (Optional[str])
+        avatar_url (Optional[str])
+        interests (Optional[List[str]])
     """
     full_name: Optional[str] = Field (None, json_schema_extra={"example": "string"})
     avatar: Optional[str] = Field (None, json_schema_extra={"example": None})
@@ -21,7 +28,7 @@ class UserProfileTransformerDto (BaseModel):
             profile (Optional[Profile])
             appUrl (str)
         Returns:
-            Optional[UserProfileTransformerDto]
+            Optional["UserProfileTransformerDto"]
         """
         if profile is None:
             return None
@@ -40,6 +47,15 @@ class UserProfileTransformerDto (BaseModel):
 class UserMeTransformerDto (BaseModel):
     """
     UserMeTransformerDto (BaseModel)
+
+    Attributes:
+        id (str)
+        name (str)
+        email (EmailStr)
+        email_verified_at (Optional[datetime])
+        created_at (datetime)
+        updated_at (datetime)
+        profile (Optional[UserProfileTransformerDto])
     """
     id: str = Field (..., json_schema_extra={"example": "string"})
     name: str = Field (..., json_schema_extra={"example": "string"})
@@ -72,6 +88,10 @@ class UserMeTransformerDto (BaseModel):
 class UserAccessTransformerDto (BaseModel):
     """
     UserAccessTransformerDto (BaseModel)
+
+    Attributes:
+        permissions (List[str])
+        roles (List[str])
     """
     permissions: List[str] = Field (default_factory=list, json_schema_extra={"example": []})
     roles: List[str] = Field (default_factory=list, json_schema_extra={"example": []})
@@ -87,32 +107,61 @@ class UserTransformerDto (BaseModel):
         email_verified_at (Optional[datetime])
         created_at (datetime)
         updated_at (datetime)
+        full_name (Optional[str])
+        avatar (Optional[str])
+        avatar_url (Optional[str])
         deleted_at (Optional[datetime])
+        role (Optional[str])
     """
     id: str = Field (..., json_schema_extra={"example": "string"})
     name: str = Field (..., json_schema_extra={"example": "string"})
+    full_name: Optional[str] = Field (None, json_schema_extra={"example": "User Full Name"})
     email: EmailStr = Field (..., json_schema_extra={"example": "string"})
+    role: Optional[str] = Field (None, json_schema_extra={"example": UserRoleEnum.User.value})
+    avatar: Optional[str] = Field (None, json_schema_extra={"example": None})
+    avatar_url: Optional[str] = Field (None, json_schema_extra={"example": None})
     email_verified_at: Optional[datetime] = Field (None, json_schema_extra={"example": None})
     created_at: datetime = Field (..., json_schema_extra={"example": "string"})
     updated_at: datetime = Field (..., json_schema_extra={"example": "string"})
     deleted_at: Optional[datetime] = Field (None, json_schema_extra={"example": None})
 
     @staticmethod
-    def fromUser (user: User) -> Self:
+    def fromUser (
+        user: User,
+        role: Optional[str] = None,
+        profile: Optional[Profile] = None,
+        appUrl: str = "",
+    ) -> Self:
         """
         Args:
             user (User)
+            role (Optional[str])
+            profile (Optional[Profile])
+            appUrl (str)
         Returns:
             UserTransformerDto
         """
+        avatar = profile.avatar if profile else None
+        avatarUrl = None
+        if avatar:
+            base = (appUrl or "").rstrip ("/")
+            avatarUrl = (
+                f"{base}/storage/{avatar.lstrip ('/')}"
+                if base
+                else f"/storage/{avatar.lstrip ('/')}"
+            )
         return UserTransformerDto (
             id=user.id,
             name=user.name,
+            full_name=profile.full_name if profile else None,
             email=user.email,
+            role=role,
+            avatar=avatar,
+            avatar_url=avatarUrl,
             email_verified_at=user.email_verified_at,
             created_at=user.created_at,
             updated_at=user.updated_at,
-            deleted_at=user.deleted_at
+            deleted_at=user.deleted_at,
         )
 
 class UserAuthTransformerDto (BaseModel):

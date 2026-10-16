@@ -3,6 +3,7 @@ from typing import Optional
 from src.app.bases.app_auth import AppAuth
 from src.app.databases.factories.app_factory import AppFactory
 from src.v1.api.user.databases.models.user_model import User
+from src.v1.api.user.repositories.user_admin_repository import UserAdminRepository
 from src.v1.api.user.repositories.user_auth_repository import UserAuthRepository
 
 class UserFactory (AppFactory):
@@ -33,7 +34,11 @@ class UserFactory (AppFactory):
         """
         data = UserFactory.definition ()
         if attributes:
-            data.update (attributes)
+            data.update ({
+                key: value
+                for key, value in attributes.items ()
+                if key != "full_name"
+            })
         return User (**data)
 
     @staticmethod
@@ -44,5 +49,13 @@ class UserFactory (AppFactory):
         Returns:
             User
         """
-        user = UserFactory.make (attributes)
-        return await UserAuthRepository.create (user)
+        attrs = dict (attributes or {})
+        fullNameRaw = attrs.pop ("full_name", None)
+        fullName = fullNameRaw.strip () if isinstance (fullNameRaw, str) else None
+        if fullName and "name" not in attrs:
+            attrs["name"] = fullName
+        user = UserFactory.make (attrs if attributes is not None else None)
+        user = await UserAuthRepository.create (user)
+        resolved = fullName or (user.name or "").strip () or user.email
+        await UserAdminRepository ().upsertProfile (user.id, resolved)
+        return user

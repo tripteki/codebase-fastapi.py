@@ -1,9 +1,12 @@
+import logging
 from src.app.bases.app_event import OnEvent
 from src.app.bases.app_i18n import AppI18n
 from src.v1.api.notification.dtos.notification_validator_dto import NotificationCreateValidatorDto
 from src.v1.api.notification.services.notification_user_service import NotificationUserService
 from src.v1.api.user.events.user.admin.exported.event import UserAdminExportedEvent
 from src.v1.api.user.events.user.admin.exported_failed.event import UserAdminExportedFailedEvent
+
+logger = logging.getLogger (__name__)
 
 @OnEvent ("v1.user.admin.exported")
 async def handleUserAdminExported (event: UserAdminExportedEvent) -> None:
@@ -28,7 +31,7 @@ async def handleUserAdminExported (event: UserAdminExportedEvent) -> None:
             )
         )
     except Exception:
-        pass
+        logger.warning ("event listener failed module=%s", __name__, exc_info=True)
 
 @OnEvent ("v1.user.admin.exported-failed")
 async def handleUserAdminExportedFailed (event: UserAdminExportedFailedEvent) -> None:
@@ -52,4 +55,4 @@ async def handleUserAdminExportedFailed (event: UserAdminExportedFailedEvent) ->
             )
         )
     except Exception:
-        pass
+        logger.warning ("event listener failed module=%s", __name__, exc_info=True)

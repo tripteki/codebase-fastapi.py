@@ -1,406 +1,185 @@
 <h1 align="center">Codebase FastAPI</h1>
 
-This skeleton provides comprehensive backend implementation built with FastAPI framework, applying concepts like `Test Driven Development` `Event-Listener Driven Development` `Queue Processing` `WebSocket Real-time` `Scheduled Tasks` `Cached`, implementing design principles like `RESTful API` `GraphQL` `Tight Cohesion & Loose Coupling` `SOLID` `Dependency Injection`, and design patterns like `Gangs of Four (GoF) Repository Pattern` `Data Transfer Object (DTO)` `Middleware Pattern` `Observer Pattern`.
+Backend skeleton built with FastAPI. It applies event-listener driven development, queue processing, realtime WebSocket, scheduled tasks, and caching, with RESTful design, SOLID, dependency injection, the repository pattern, and DTOs.
 
-### Features
+It shares one REST contract and the same realtime events with Codebase Nest and Codebase Laravel, so Codebase Nuxt and Codebase Next work with any of them.
 
-<table style="width: 100%; border: none;">
-  <tr>
-    <th>No</th>
-    <th>Feature</th>
-    <th>Description</th>
-    <th>Technology</th>
-  </tr>
-  <tr>
-    <td>1</td>
-    <td>REST API</td>
-    <td>Comprehensive RESTful API with OpenAPI/Swagger documentation</td>
-    <td>FastAPI + Swagger UI</td>
-  </tr>
-  <tr>
-    <td>2</td>
-    <td>GraphQL API</td>
-    <td>Modern GraphQL API with Strawberry integration</td>
-    <td>Strawberry GraphQL</td>
-  </tr>
-  <tr>
-    <td>3</td>
-    <td>Authentication</td>
-    <td>JWT-based authentication with access/refresh token mechanism</td>
-    <td>JWT + Python-Jose</td>
-  </tr>
-  <tr>
-    <td>4</td>
-    <td>WebSocket</td>
-    <td>Real-time bidirectional event-based communication</td>
-    <td>Socket.IO + Python-SocketIO</td>
-  </tr>
-  <tr>
-    <td>5</td>
-    <td>Queue Processing</td>
-    <td>Asynchronous job processing with Redis-backed queue system</td>
-    <td>RQ (Redis Queue) + Redis</td>
-  </tr>
-  <tr>
-    <td>6</td>
-    <td>Scheduled Tasks</td>
-    <td>Cron-based task scheduling for periodic operations</td>
-    <td>APScheduler</td>
-  </tr>
-  <tr>
-    <td>7</td>
-    <td>Database</td>
-    <td>Multi-database support with async ORM</td>
-    <td>SQLModel + Alembic + PostgreSQL + MongoDB</td>
-  </tr>
-  <tr>
-    <td>8</td>
-    <td>Caching</td>
-    <td>Redis-based caching for improved performance</td>
-    <td>Redis + FastAPI-Limiter</td>
-  </tr>
-  <tr>
-    <td>9</td>
-    <td>Import/Export</td>
-    <td>Bulk user data import/export with CSV/Excel support</td>
-    <td>Pandas + openpyxl + Queue</td>
-  </tr>
-  <tr>
-    <td>10</td>
-    <td>Notifications</td>
-    <td>User & admin notification APIs, Web Push</td>
-    <td>SQLModel + pywebpush</td>
-  </tr>
-  <tr>
-    <td>11</td>
-    <td>Email Service</td>
-    <td>Transactional email notifications with template support</td>
-    <td>aiosmtplib + Jinja2</td>
-  </tr>
-  <tr>
-    <td>12</td>
-    <td>Internationalization</td>
-    <td>Multi-language support with i18n (English + Indonesian)</td>
-    <td>Custom i18n implementation</td>
-  </tr>
-  <tr>
-    <td>13</td>
-    <td>Rate Limiting</td>
-    <td>API rate limiting and throttling for security</td>
-    <td>FastAPI-Limiter + Redis</td>
-  </tr>
-  <tr>
-    <td>14</td>
-    <td>Testing</td>
-    <td>End-to-end testing with comprehensive test coverage</td>
-    <td>Pytest + HTTPX</td>
-  </tr>
-</table>
+## Conventions
 
-Getting Started
----
+| Topic | Rule |
+|-------|------|
+| Brand | Codebase. Primary `#2563eb`, secondary `#84cc16`, tertiary `#1e3a8a` |
+| Roles | `superadmin`, `admin`, `user` |
+| Format | Indent 4, double quotes, trailing commas, space before `(`. Keep docstrings |
+| Layers | Controller, service, repository. Validator DTO in, transformer DTO out. Events and listeners for side effects |
+| Validation | HTTP 422 `{ "detail": [{ "type", "loc", "msg", "input", "ctx" }] }` |
+| Errors | `{ "detail": "..." }` |
+| Locales | `en`, `id`, `ms` |
+| GraphQL | Not mounted |
+| Mongo | Off when `DATABASE_MONGO_URI` is empty |
+| Rate limits | Production only |
+
+Cursor rules live in `.cursor/rules/`.
+
+## Features
+
+| Feature | Technology |
+|---------|------------|
+| REST API with Swagger | FastAPI |
+| JWT access and refresh tokens | python-jose |
+| Realtime | python-socketio |
+| Queue | RQ + Redis |
+| Scheduled tasks | APScheduler |
+| Database | SQLModel + Alembic + PostgreSQL |
+| Import and export (CSV, XLS, XLSX) | pandas + openpyxl |
+| Notifications and Web Push | pywebpush |
+| Email | aiosmtplib + Jinja2 |
+| Internationalization | `en`, `id`, `ms` |
+| Tests | pytest + HTTPX |
+
+## Getting Started
 
 ### Requirements
 
-Ensure you have the following installed:
+- Python 3.10+
+- Poetry 1.8+
+- PostgreSQL 14+
+- Redis 7+
 
-- Python >= 3.10
-- Poetry >= 1.8.0
-- PostgreSQL >= 14.x
-- MongoDB >= 6.x
-- Redis >= 7.x
-
-### Installation
+### Setup
 
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd codebase-fastapi.py
-
-# Install dependencies with Poetry
 poetry install
-```
-
-### Configuration
-
-Copy the environment configuration file and update with your credentials:
-
-```bash
 cp .env.example .env
 poetry run python3 ./src/cli.py secret
-```
-
-Copy the generated value into `APP_SECRET` in `.env` (used for app encryption and JWT signing).
-
-Optional Web Push (browser push when in-app notifications are created):
-
-```env
-# Web Push (optional)
-VAPID_SUBJECT=mailto:noreply@tripteki.com
-VAPID_PUBLIC_KEY=
-VAPID_PRIVATE_KEY=
-```
-
-Generate keys with `npx web-push generate-vapid-keys`. Set the public key in the client app's public environment variable for Web Push.
-
-Run database migrations:
-
-```bash
-# PostgreSQL migration
 poetry run python3 ./src/cli.py migrate:up
-```
-
-Seed default users:
-
-```bash
 poetry run python3 ./src/cli.py v1:user:seed
 ```
 
-### Running the Application
+Put the generated secret in `APP_SECRET`. The seeder creates `superuser@{APP_EMAIL_SERVER}` with password `12345678`.
 
-#### Development Mode
+The `ml` group (scikit-learn, keras, transformers, scrapy) is optional. Install it with `poetry install --with ml`.
+
+### Configuration
+
+| Variable | Description |
+|----------|-------------|
+| `APP_SECRET` | Encryption and JWT signing key |
+| `APP_ENV` | `production` turns on rate limits |
+| `FRONTEND_URL` | Base URL for signed links in emails |
+| `CORS_ORIGIN` | Allowed origins as a JSON array |
+| `DATABASE_POSTGRE_URI` | PostgreSQL connection |
+| `DATABASE_MONGO_URI` | Optional MongoDB connection |
+| `MEMORY_REDIS_*` | Redis for cache, queue, and Socket.IO |
+| `MAIL_URI` | SMTP connection |
+| `VAPID_*` | Optional Web Push keys (`npx web-push generate-vapid-keys`) |
+
+### Run
+
+| Command | Description |
+|---------|-------------|
+| `poetry run fastapi dev` | Development server on `http://localhost:8000` |
+| `poetry run uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4` | Production server |
+| `poetry run python3 ./src/cli.py queue:work` | Queue worker for import and export |
+
+Swagger UI: `http://localhost:8000/api/docs`
+
+## Docker
+
+The image is `python:3.10-alpine` with only the `main` Poetry group.
 
 ```bash
-poetry run fastapi dev
+cp .env.example .env
+docker compose run --rm --no-deps fastapi python ./src/cli.py secret
+docker compose up -d --build
 ```
 
-The server will start at `http://localhost:8000` with the following features enabled:
-
-- Hot-reload on file changes
-- Debug mode enabled
-- Detailed logging
-
-#### Production Mode
+Put the generated secret in `APP_SECRET` before `docker compose up`. Migrations and seeders run manually:
 
 ```bash
-# Start production server
-poetry run uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4
+docker compose exec fastapi python ./src/cli.py migrate:up
+docker compose exec fastapi python ./src/cli.py v1:user:seed
 ```
 
-#### Queue processing (import/export)
+| Service | Purpose | Port |
+|---------|---------|------|
+| `fastapi` | Uvicorn server (`UVICORN_WORKERS`, default 1) | `APP_PORT` (8000) |
+| `worker` | `queue:work` (profile `worker`) | — |
+| `postgres`, `redis` | PostgreSQL 16 and Redis 7 | internal |
+| `mongo` | MongoDB 7 (profile `mongo`) | internal |
 
-Import/export uses RQ (`poetry run python3 ./src/cli.py queue:work`). Web Push is dispatched asynchronously in-process after a notification is created (no separate queue worker required for push).
+Compose points PostgreSQL and Redis at its own containers. Change their credentials with `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, and `REDIS_PASSWORD`. Enable MongoDB with `docker compose --profile mongo up -d` and `DATABASE_MONGO_URI=mongodb://mongo:27017/codebase`.
 
-### API Overview
+## API
 
-All REST routes are prefixed with `/api`.
+All routes live under `/api/v1`.
 
-#### Web Push (`/api/v1/webpush`)
+| Area | Routes |
+|------|--------|
+| Auth | `/auth/login`, `/auth/register`, `/auth/refresh`, `/auth/logout`, `/auth/forgot-password`, `/auth/reset-password/{email}`, `/auth/verify-email/{email}` |
+| Profile | `/users/me`, `/users/me/accesses`, `/users/me/interests` |
+| Notifications | `/notifications/*` |
+| Web Push | `/webpush/subscribe`, `/webpush/unsubscribe` |
+| Admin | `/admin/users`, `/admin/roles`, `/admin/permissions`, `/admin/activities`, `/admin/notifications`, `/admin/settings`, `/admin/dashboard`, `/admin/search` |
 
-Requires JWT access token and verified email.
+Login body is `{ "identifierKey": "email" | "name", "identifierValue": "...", "password": "..." }` and returns `{ accessToken, refreshToken, accessTokenTtl, refreshTokenTtl }`. `identifierKey` is optional; without it, a value containing `@` is treated as an email, otherwise as a name.
 
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | `/webpush/subscribe` | Register push subscription |
-| POST | `/webpush/unsubscribe` | Remove push subscription |
+Lists accept `limitPage`, `currentPage`, `orders=field:asc`, and `filters=key:value` and return `{ total, totalPage, perPage, currentPage, nextPage, previousPage, firstPage, lastPage, data }`.
 
-Subscribe body (browser `PushSubscription.toJSON()`):
+## Realtime
 
-```json
-{
-  "endpoint": "https://push.example.test/subscription",
-  "keys": { "p256dh": "...", "auth": "..." },
-  "content_encoding": "aesgcm"
-}
-```
+Socket.IO is served at `/socket.io`. Connect with `auth: { token: accessToken }`. Each user joins room `user:{id}`.
 
-Response: `{ "success": true }`
+| Event | Payload |
+|-------|---------|
+| `v1.notification.created` | `id`, `unread` |
+| `v1.admin.refresh` | `userId`, `scopes` |
+| `v1.user.admin.imported` | `userId`, `filename`, `totalImported`, `totalSkipped` |
+| `v1.user.admin.imported-failed` | `userId`, `filename`, `error` |
+| `v1.user.admin.exported` | `userId`, `filename`, `fileUrl` |
+| `v1.user.admin.exported-failed` | `userId`, `error` |
+| `v1.acl.role.admin.*`, `v1.acl.permission.admin.*` | Same as the user import and export events |
+| `v1.user.admin.activated`, `v1.user.admin.deactivated` | `id`, `name`, `email`, `email_verified_at`, `created_at`, `updated_at`, `deleted_at` |
 
-Push is skipped when `VAPID_PUBLIC_KEY` is empty. Subscriptions are stored in `push_subscriptions`.
-
-#### Notifications
-
-User routes: `/api/v1/notifications/*` (own notifications, verified).
-
-Admin routes: `/api/v1/admin/notifications/*`.
-
-### API Documentation
-
-#### Swagger UI (REST API)
-
-Access the interactive API documentation at:
-
-```
-http://localhost:8000/api/docs
-```
-
-Features:
-- Interactive API testing
-- Request/response examples
-- Schema definitions
-- Authentication support
-
-#### GraphQL Playground
-
-Access the GraphQL API interface at:
-
-```
-http://localhost:8000/graphql
-```
-
-Example query:
-
-```graphql
-query {
-  me {
-    id
-    email
-    name
-  }
-}
-
-query {
-  version
-}
-```
-
-Example mutation:
-
-```graphql
-mutation {
-  login(email: "user@example.com", password: "password") {
-    accessToken
-    refreshToken
-  }
-}
-```
-
-### WebSocket Setup
-
-This application provides real-time notifications for import/export and in-app notification updates using Socket.IO.
-
-#### Available Events
-
-- `v1.notification.created` - New in-app notification (`{ id, unread }`)
-- `v1.user.admin.imported` - User import completed successfully
-- `v1.user.admin.imported-failed` - User import failed
-- `v1.user.admin.exported` - User export completed successfully
-- `v1.user.admin.exported-failed` - User export failed
-
-#### Client Connection Example
+Import and export events go to the admin who started the job. Activate and deactivate events go to the affected user.
 
 ```javascript
-import io from 'socket.io-client';
+import { io } from "socket.io-client";
 
-const socket = io('http://localhost:8000', {
-    transports: ['websocket', 'polling'],
-    extraHeaders: {
-        'Authorization': 'Bearer YOUR_JWT_TOKEN'
-    }
+const socket = io("http://localhost:8000", {
+    path: "/socket.io",
+    transports: ["websocket"],
+    auth: { token: accessToken },
 });
 
-socket.on('v1.notification.created', (data) => {
-    console.log('Notification:', data.id, 'unread:', data.unread);
-});
-
-socket.on('v1.user.admin.imported', (data) => {
-    console.log('Import completed:', data.totalImported, 'users');
-});
-
-socket.on('v1.user.admin.exported', (data) => {
-    console.log('Export ready:', data.fileUrl);
-});
+socket.on("v1.notification.created", (data) => console.log(data.id, data.unread));
+socket.on("v1.user.admin.exported", (data) => console.log(data.fileUrl));
 ```
 
-#### Testing WebSocket
-
-Use the provided HTML client for testing:
+## Testing
 
 ```bash
-open examples/websocket-import-export-client.html
-```
-
-### Testing
-
-Run the end-to-end test suite:
-
-```bash
-# Run all tests
-poetry run pytest
-
-# Run with verbose output
 poetry run pytest -v
-
-# Run with coverage report
 poetry run pytest --cov=src --cov-report=html
-
-# Web Push only
-poetry run pytest test/v1/test_webpush.py -v
 ```
 
-Tests cover auth, user & profile, user admin, notifications, Web Push, and health checks (`test/v1/`).
+## CLI
 
-### Available Scripts
+| Command | Description |
+|---------|-------------|
+| `migrate:up` | Run migrations |
+| `migrate:down` | Roll back the last migration |
+| `migrate:status` | Show migration status |
+| `queue:work` | Start the queue worker |
+| `queue:status` | Show queue status |
+| `queue:failed` | List failed jobs (`--count`, `--retry`, `--clear`) |
+| `cache:clear` | Clear the Redis cache |
+| `secret` | Generate `APP_SECRET` |
+| `v1:user:seed` | Seed default users |
 
-<table style="width: 100%; border: none;">
-  <tr>
-    <th>Script</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td><code>poetry run fastapi dev</code></td>
-    <td>Start development server with hot-reload</td>
-  </tr>
-  <tr>
-    <td><code>poetry run fastapi run</code></td>
-    <td>Start production server</td>
-  </tr>
-  <tr>
-    <td><code>poetry run pytest</code></td>
-    <td>Run end-to-end tests</td>
-  </tr>
-  <tr>
-    <td><code>poetry run pytest --cov</code></td>
-    <td>Run tests with coverage report</td>
-  </tr>
-  <tr>
-    <td><code>poetry run python3 ./src/cli.py migrate:up</code></td>
-    <td>Run PostgreSQL database migrations</td>
-  </tr>
-  <tr>
-    <td><code>poetry run python3 ./src/cli.py migrate:down</code></td>
-    <td>Rollback last migration</td>
-  </tr>
-  <tr>
-    <td><code>poetry run python3 ./src/cli.py migrate:status</code></td>
-    <td>Show migration status</td>
-  </tr>
-  <tr>
-    <td><code>poetry run python3 ./src/cli.py queue:work</code></td>
-    <td>Start background queue worker</td>
-  </tr>
-  <tr>
-    <td><code>poetry run python3 ./src/cli.py queue:failed</code></td>
-    <td>List all failed jobs</td>
-  </tr>
-  <tr>
-    <td><code>poetry run python3 ./src/cli.py queue:failed --count</code></td>
-    <td>Show count of failed jobs</td>
-  </tr>
-  <tr>
-    <td><code>poetry run python3 ./src/cli.py queue:failed --retry</code></td>
-    <td>Retry all failed jobs</td>
-  </tr>
-  <tr>
-    <td><code>poetry run python3 ./src/cli.py queue:failed --clear</code></td>
-    <td>Clear all failed jobs</td>
-  </tr>
-  <tr>
-    <td><code>poetry run python3 ./src/cli.py cache:clear</code></td>
-    <td>Clear all Redis cache</td>
-  </tr>
-  <tr>
-    <td><code>poetry run python3 ./src/cli.py secret</code></td>
-    <td>Generate random secret key for JWT (set as <code>APP_SECRET</code> in <code>.env</code>)</td>
-  </tr>
-  <tr>
-    <td><code>poetry run python3 ./src/cli.py v1:user:seed</code></td>
-    <td>Seed default users into database</td>
-  </tr>
-</table>
+Run each with `poetry run python3 ./src/cli.py <command>`.
 
-Author
----
+## Author
 
 - Trip Teknologi ([@tripteki](https://linkedin.com/company/tripteki))
 - Hasby Maulana ([@hsbmaulana](https://linkedin.com/in/hsbmaulana))

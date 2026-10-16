@@ -1,5 +1,7 @@
-from typing import Optional
+from typing import Any, Optional
+from pydantic import ValidationError
 from src.app.dependencies.app_rate_limit import rateLimit
+from src.app.utils.app_upload_guard import readImportUpload
 from fastapi import (
     APIRouter,
     BackgroundTasks,
@@ -13,10 +15,11 @@ from fastapi import (
     status,
     UploadFile,
 )
+from fastapi.exceptions import RequestValidationError
 from fastapi.security import HTTPAuthorizationCredentials
 from src.app.bases.app_i18n import AppI18n
 from src.app.bases.app_security import security
-from src.app.dependencies.app_auth_api_dependency import get_current_user
+from src.app.dependencies.app_permission_dependency import requirePermission
 from src.app.dtos.app_dto import Status, Description
 from src.app.repositories.app_repository import OffsetPagination
 from src.app.utils.app_query_parser import parseOrders, parseFilters
@@ -34,6 +37,46 @@ from src.v1.api.user.services.user_auth_service import UserAuthService
 
 userAdminRouter = APIRouter (prefix="/api/v1/admin/users", tags=["UserAdmin"])
 
+def _parseDto (model: Any, data: dict) -> Any:
+    """
+    Args:
+        model (Any)
+        data (dict)
+    Returns:
+        Any
+    """
+    try:
+        return model.model_validate (data)
+    except ValidationError as exc:
+        errors = [{**error, "loc": ("body", *error.get ("loc", ()))} for error in exc.errors ()]
+        raise RequestValidationError (errors)
+
+def _blank (value: Any) -> Optional[str]:
+    """
+    Args:
+        value (Any)
+    Returns:
+        Optional[str]
+    """
+    if value is None or not isinstance (value, str):
+        return None
+    text = value.strip ()
+    return text or None
+
+def _uploadFromForm (value: Any) -> Optional[UploadFile]:
+    """
+    Args:
+        value (Any)
+    Returns:
+        Optional[UploadFile]
+    """
+    if value is None or isinstance (value, str):
+        return None
+    filename = getattr (value, "filename", None)
+    if not filename:
+        return None
+    return value
+
 @userAdminRouter.get (
     "/",
     status_code=Status.OK,
@@ -43,7 +86,11 @@ userAdminRouter = APIRouter (prefix="/api/v1/admin/users", tags=["UserAdmin"])
         item_example={
             "id": "string",
             "name": "string",
+            "full_name": "string",
             "email": "string",
+            "role": "user",
+            "avatar": None,
+            "avatar_url": None,
             "email_verified_at": None,
             "created_at": "string",
             "updated_at": "string",
@@ -54,9 +101,9 @@ userAdminRouter = APIRouter (prefix="/api/v1/admin/users", tags=["UserAdmin"])
     )
 )
 async def index (
-    current_user: User = Depends (get_current_user),
+    current_user: User = Depends (requirePermission ("user.view")),
     orders: Optional[str] = Query (None, description="Order by fields (e.g., 'created_at:desc,name:asc')"),
-    filters: Optional[str] = Query (None, description="Filter by fields (e.g., 'name:john,email:test')"),
+    filters: Optional[str] = Query (None, description="Filter by fields (e.g., 'q:john,role:user,status:active')"),
     limitPage: Optional[int] = Query (10, ge=1, le=100),
     currentPage: Optional[int] = Query (1, ge=1)
 ) -> OffsetPagination[UserTransformerDto]:
@@ -75,20 +122,12 @@ async def index (
 )
 async def activate (
     id: str,
-    request: Request,
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends (security)
+    current_user: User = Depends (requirePermission ("user.restore")),
 ) -> UserTransformerDto:
     """
     Activate
     """
-    i18n = AppI18n.i18n ()
-    token = UserAuthService.httpBearerToken (request)
-    if not token:
-        raise HTTPException (status_code=status.HTTP_401_UNAUTHORIZED, detail=i18n.t ("_v1_user.auth.missing_token"))
-    userId = await UserAuthService.validateToken (token)
-    if not userId:
-        raise HTTPException (status_code=status.HTTP_401_UNAUTHORIZED, detail=i18n.t ("_v1_user.auth.invalid_token"))
-    return await UserAdminService.restore (userId, id)
+    return await UserAdminService.restore (current_user.id, id)
 
 @userAdminRouter.delete (
     "/deactivate/{id}",
@@ -99,12 +138,28 @@ async def activate (
 )
 async def deactivate (
     id: str,
-    current_user: User = Depends (get_current_user)
+    current_user: User = Depends (requirePermission ("user.delete"))
 ) -> UserTransformerDto:
     """
     Deactivate
     """
     return await UserAdminService.delete (current_user.id, id)
+
+@userAdminRouter.delete (
+    "/force-delete/{id}",
+    status_code=Status.OK,
+    dependencies=[rateLimit (times=10, seconds=60), Depends (security)],
+    response_model=UserTransformerDto,
+    responses=getStandardResponses (unauthorized=True, forbidden=True, not_found=True),
+)
+async def forceDestroy (
+    id: str,
+    current_user: User = Depends (requirePermission ("user.delete")),
+) -> UserTransformerDto:
+    """
+    Force Destroy
+    """
+    return await UserAdminService.forceDelete (current_user.id, id)
 
 @userAdminRouter.get (
     "/{id}",
@@ -115,7 +170,7 @@ async def deactivate (
 )
 async def show (
     id: str,
-    current_user: User = Depends (get_current_user)
+    current_user: User = Depends (requirePermission ("user.view"))
 ) -> UserTransformerDto:
     """
     Show
@@ -131,13 +186,31 @@ async def show (
 )
 async def update (
     id: str,
-    dto: UserUpdateValidatorDto = Body (..., examples={"name": "user", "email": "user@mail.com", "password": "12345678", "password_confirmation": "12345678"}),
-    current_user: User = Depends (get_current_user)
+    request: Request,
+    current_user: User = Depends (requirePermission ("user.update"))
 ) -> UserTransformerDto:
     """
     Update
     """
-    return await UserAdminService.update (current_user.id, id, dto)
+    contentType = (request.headers.get ("content-type") or "").lower ()
+    avatar: Optional[UploadFile] = None
+    if "multipart/form-data" in contentType:
+        form = await request.form ()
+        password = _blank (form.get ("password"))
+        passwordConfirmation = _blank (form.get ("password_confirmation"))
+        dto = _parseDto (UserUpdateValidatorDto, {
+            "name": _blank (form.get ("name")),
+            "full_name": _blank (form.get ("full_name")),
+            "email": _blank (form.get ("email")),
+            "password": password,
+            "password_confirmation": passwordConfirmation,
+            "role": _blank (form.get ("role")),
+        })
+        avatar = _uploadFromForm (form.get ("avatar"))
+    else:
+        body = await request.json ()
+        dto = _parseDto (UserUpdateValidatorDto, body)
+    return await UserAdminService.update (current_user.id, id, dto, avatar)
 
 @userAdminRouter.post (
     "/",
@@ -147,13 +220,29 @@ async def update (
     responses=getStandardResponses (unauthorized=True, forbidden=True, bad_request=True, unvalidated=True)
 )
 async def store (
-    dto: UserCreateValidatorDto = Body (..., examples={"name": "user", "email": "user@mail.com", "password": "12345678", "password_confirmation": "12345678"}),
-    current_user: User = Depends (get_current_user)
+    request: Request,
+    current_user: User = Depends (requirePermission ("user.create"))
 ) -> UserTransformerDto:
     """
     Store
     """
-    return await UserAdminService.create (current_user.id, dto)
+    contentType = (request.headers.get ("content-type") or "").lower ()
+    avatar: Optional[UploadFile] = None
+    if "multipart/form-data" in contentType:
+        form = await request.form ()
+        dto = _parseDto (UserCreateValidatorDto, {
+            "name": _blank (form.get ("name")) or _blank (form.get ("full_name")) or "",
+            "full_name": _blank (form.get ("full_name")) or _blank (form.get ("name")),
+            "email": str (form.get ("email") or ""),
+            "password": str (form.get ("password") or ""),
+            "password_confirmation": str (form.get ("password_confirmation") or ""),
+            "role": _blank (form.get ("role")),
+        })
+        avatar = _uploadFromForm (form.get ("avatar"))
+    else:
+        body = await request.json ()
+        dto = _parseDto (UserCreateValidatorDto, body)
+    return await UserAdminService.create (current_user.id, dto, avatar)
 
 @userAdminRouter.put (
     "/verify/{id}",
@@ -164,7 +253,7 @@ async def store (
 )
 async def verify (
     id: str,
-    current_user: User = Depends (get_current_user)
+    current_user: User = Depends (requirePermission ("user.update"))
 ) -> UserTransformerDto:
     """
     Verify
@@ -221,10 +310,10 @@ Bob Wilson,bob@example.com,mypassword789
         forbidden_desc=Description.FORBIDDEN_INSUFFICIENT_PERMISSIONS
     )
 )
-async def import_users (
+async def importUsers (
     background_tasks: BackgroundTasks,
     file: UploadFile = File (..., description="Upload CSV, XLSX, or XLS file containing user data with columns: name, email, password"),
-    current_user: User = Depends (get_current_user)
+    current_user: User = Depends (requirePermission ("user.import"))
 ) -> str:
     """
     Import Users from File
@@ -233,8 +322,8 @@ async def import_users (
     The file will be processed asynchronously in the background.
     """
     try:
-        fileContent = await file.read ()
-        return await UserAdminService.import_users (background_tasks, current_user.id, fileContent, file.filename)
+        fileContent = await readImportUpload (file)
+        return await UserAdminService.importUsers (background_tasks, current_user.id, fileContent, file.filename)
     except HTTPException:
         raise
     except Exception as e:
@@ -286,10 +375,12 @@ id,name,email,email_verified_at,created_at,updated_at
         forbidden_desc=Description.FORBIDDEN_INSUFFICIENT_PERMISSIONS
     )
 )
-async def export_users (
+async def exportUsers (
     background_tasks: BackgroundTasks,
     export_type: Optional[str] = Query (default="csv", description="File format: csv (default), xlsx, or xls", enum=["csv", "xls", "xlsx"]),
-    current_user: User = Depends (get_current_user)
+    orders: Optional[str] = Query (None, description="Same as the list (e.g., 'created_at:desc')"),
+    filters: Optional[str] = Query (None, description="Same as the list (e.g., 'q:john,role:user,status:active')"),
+    current_user: User = Depends (requirePermission ("user.export"))
 ) -> str:
     """
     Export Users to File
@@ -298,7 +389,13 @@ async def export_users (
     The export will be processed asynchronously and you will receive a notification with the download link.
     """
     try:
-        return await UserAdminService.export_users (background_tasks, current_user.id, export_type)
+        return await UserAdminService.exportUsers (
+            background_tasks,
+            current_user.id,
+            export_type,
+            parseOrders (orders),
+            parseFilters (filters),
+        )
     except HTTPException:
         raise
     except Exception as e:

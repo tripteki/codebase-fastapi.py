@@ -252,6 +252,30 @@ class TestUserAuth:
         assert isinstance (result, str)
         assert len (result) > 0
 
+def makeTargetUser (test_db: Session) -> str:
+    """
+    Args:
+        test_db (Session)
+    Returns:
+        str
+    """
+    from ulid import ULID
+
+    userId = str (ULID ())
+    now = datetime.utcnow ()
+    user = User (
+        id=userId,
+        name=f"target-{userId[-10:].lower ()}",
+        email=f"target-{userId.lower ()}@mail.com",
+        password=AppAuth.hashPassword ("12345678"),
+        email_verified_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+    test_db.add (user)
+    test_db.commit ()
+    return userId
+
 class TestUserAdmin:
     """User admin tests"""
 
@@ -341,8 +365,9 @@ class TestUserAdmin:
         """
         import time
 
+        targetId = makeTargetUser (test_db)
         response = await client.put (
-            f"/api/v1/admin/users/{test_user['id']}",
+            f"/api/v1/admin/users/{targetId}",
             headers={"Authorization": f"Bearer {auth_token}"},
             json={
                 "name": f"updated-user-{int (time.time ())}"
@@ -369,10 +394,11 @@ class TestUserAdmin:
 
         Should verify user email
         """
-        update_user_verification (test_db, test_user["id"])
+        targetId = makeTargetUser (test_db)
+        update_user_verification (test_db, targetId)
 
         response = await client.put (
-            f"/api/v1/admin/users/verify/{test_user['id']}",
+            f"/api/v1/admin/users/verify/{targetId}",
             headers={"Authorization": f"Bearer {auth_token}"}
         )
 
@@ -394,10 +420,11 @@ class TestUserAdmin:
 
         Should deactivate (soft delete) user
         """
-        update_user_verification (test_db, test_user["id"])
+        targetId = makeTargetUser (test_db)
+        update_user_verification (test_db, targetId)
 
         response = await client.delete (
-            f"/api/v1/admin/users/deactivate/{test_user['id']}",
+            f"/api/v1/admin/users/deactivate/{targetId}",
             headers={"Authorization": f"Bearer {auth_token}"}
         )
 
@@ -405,8 +432,6 @@ class TestUserAdmin:
 
         data = response.json ()
         assert data["deleted_at"] is not None
-
-        update_user_verification (test_db, test_user["id"])
 
     @pytest.mark.asyncio
     async def test_admin_users_activate_delete (
@@ -421,14 +446,15 @@ class TestUserAdmin:
 
         Should activate (restore) user
         """
+        targetId = makeTargetUser (test_db)
         deactivate_response = await client.delete (
-            f"/api/v1/admin/users/deactivate/{test_user['id']}",
+            f"/api/v1/admin/users/deactivate/{targetId}",
             headers={"Authorization": f"Bearer {auth_token}"}
         )
         assert deactivate_response.status_code == 200
 
         response = await client.delete (
-            f"/api/v1/admin/users/activate/{test_user['id']}",
+            f"/api/v1/admin/users/activate/{targetId}",
             headers={"Authorization": f"Bearer {auth_token}"}
         )
 
@@ -436,8 +462,6 @@ class TestUserAdmin:
 
         data = response.json ()
         assert data["deleted_at"] is None
-
-        update_user_verification (test_db, test_user["id"])
 
     @pytest.mark.asyncio
     async def test_admin_users_import_post (

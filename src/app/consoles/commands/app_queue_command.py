@@ -14,6 +14,8 @@ def queueWorkCommand (queues: tuple[str, ...], max_jobs: Optional[int], worker_t
     """
     Args:
         queues (tuple[str, ...])
+        max_jobs (Optional[int])
+        worker_ttl (Optional[int])
     Returns:
         None
     """

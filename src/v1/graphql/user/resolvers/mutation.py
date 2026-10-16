@@ -23,7 +23,8 @@ class UserMutation:
         dto = UserAuthValidatorDto (
             identifierKey=inputs.identifierKey,
             identifierValue=inputs.identifierValue,
-            password=inputs.password
+            password=inputs.password,
+            remember=inputs.remember,
         )
         result = await UserAuthService.login (dto)
         return UserAuthTransformerDto (

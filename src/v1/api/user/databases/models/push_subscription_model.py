@@ -9,7 +9,7 @@ class PushSubscription (SQLModel, table=True):
     PushSubscription (SQLModel)
 
     Attributes:
-        id (int)
+        id (Optional[int])
         subscribable_id (str)
         subscribable_type (str)
         endpoint (str)

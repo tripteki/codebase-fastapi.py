@@ -33,6 +33,7 @@ class NotificationUserService:
         result = await NotificationUserService.repository.allOffset (userId, orders, filters, page)
         data = [NotificationTransformerDto.fromNotification (item) for item in result.data]
         return OffsetPagination (
+            total=result.total,
             totalPage=result.totalPage,
             perPage=result.perPage,
             currentPage=result.currentPage,
@@ -88,7 +89,9 @@ class NotificationUserService:
         Returns:
             NotificationUnreadTransformerDto
         """
-        return NotificationUnreadTransformerDto (unread=0)
+        await NotificationUserRepository.unreadAll (userId)
+        unread = await NotificationUserRepository.unreadCount (userId)
+        return NotificationUnreadTransformerDto (unread=int (unread))
 
     @staticmethod
     async def unreadCount (userId: str) -> NotificationUnreadTransformerDto:
@@ -98,7 +101,8 @@ class NotificationUserService:
         Returns:
             NotificationUnreadTransformerDto
         """
-        return NotificationUnreadTransformerDto (unread=0)
+        unread = await NotificationUserRepository.unreadCount (userId)
+        return NotificationUnreadTransformerDto (unread=int (unread))
 
     @staticmethod
     async def read (userId: str, id: str) -> NotificationTransformerDto:
@@ -138,7 +142,9 @@ class NotificationUserService:
         Returns:
             Dict[str, int]
         """
-        return await NotificationUserRepository.count (userId)
+        total = int (await NotificationUserRepository.count (userId))
+        unread = int (await NotificationUserRepository.unreadCount (userId))
+        return {"read": total - unread, "unread": unread}
 
     @staticmethod
     async def notify (userId: str, data: NotificationCreateValidatorDto) -> NotificationTransformerDto:
@@ -149,17 +155,17 @@ class NotificationUserService:
         Returns:
             NotificationTransformerDto
         """
-        dataDict = data.dict ()
+        dataDict = data.model_dump ()
         dataDict.pop ("user_id", None)
         i18n = AppI18n.i18n ()
         notification = await NotificationUserRepository.create (userId, dataDict)
         if not notification:
             raise HTTPException (status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=i18n.t ("_v1_notification.failed_to_create"))
 
-        unreadCounts = await NotificationUserRepository.count (userId)
+        unread = await NotificationUserRepository.unreadCount (userId)
         await emitToUser (userId, "v1.notification.created", {
             "id": notification.id,
-            "unread": unreadCounts.get ("unread", 0),
+            "unread": int (unread),
         })
 
         await NotificationWebpushService.dispatchAsync (
@@ -185,3 +191,14 @@ class NotificationUserService:
         if not notification:
             raise HTTPException (status_code=status.HTTP_404_NOT_FOUND, detail=i18n.t ("_v1_notification.notification_not_found"))
         return NotificationTransformerDto.fromNotification (notification)
+
+    @staticmethod
+    async def deleteAll (userId: str) -> BatchPayloadType:
+        """
+        Args:
+            userId (str)
+        Returns:
+            BatchPayloadType
+        """
+        count = await NotificationUserRepository.deleteAll (userId)
+        return BatchPayloadType (count=count)

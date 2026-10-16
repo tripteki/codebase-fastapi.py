@@ -20,6 +20,42 @@ class UserAuthRepository:
         return Session (engine)
 
     @staticmethod
+    async def emailTaken (email: str, exceptId: Optional[str] = None) -> bool:
+        """
+        Args:
+            email (str)
+            exceptId (Optional[str])
+        Returns:
+            bool
+        """
+        session = UserAuthRepository.getSession ()
+        try:
+            statement = select (User.id).where (User.email == email)
+            if exceptId:
+                statement = statement.where (User.id != exceptId)
+            return session.exec (statement).first () is not None
+        finally:
+            session.close ()
+
+    @staticmethod
+    async def nameTaken (name: str, exceptId: Optional[str] = None) -> bool:
+        """
+        Args:
+            name (str)
+            exceptId (Optional[str])
+        Returns:
+            bool
+        """
+        session = UserAuthRepository.getSession ()
+        try:
+            statement = select (User.id).where (User.name == name)
+            if exceptId:
+                statement = statement.where (User.id != exceptId)
+            return session.exec (statement).first () is not None
+        finally:
+            session.close ()
+
+    @staticmethod
     async def findOneByEmail (email: str) -> Optional[User]:
         """
         Args:
@@ -30,6 +66,22 @@ class UserAuthRepository:
         session = UserAuthRepository.getSession ()
         try:
             statement = select (User).where (User.email == email, User.deleted_at == None)
+            result = session.exec (statement).first ()
+            return result
+        finally:
+            session.close ()
+
+    @staticmethod
+    async def findOneByName (name: str) -> Optional[User]:
+        """
+        Args:
+            name (str)
+        Returns:
+            Optional[User]
+        """
+        session = UserAuthRepository.getSession ()
+        try:
+            statement = select (User).where (User.name == name, User.deleted_at == None)
             result = session.exec (statement).first ()
             return result
         finally:
@@ -206,6 +258,25 @@ class UserAuthRepository:
             session.commit ()
             session.refresh (user)
             return user
+        finally:
+            session.close ()
+
+    @staticmethod
+    async def hasResetToken (token: str, email: str) -> bool:
+        """
+        Args:
+            token (str)
+            email (str)
+        Returns:
+            bool
+        """
+        session = UserAuthRepository.getSession ()
+        try:
+            statement = select (PasswordResetToken).where (
+                PasswordResetToken.token == token,
+                PasswordResetToken.email == email
+            )
+            return session.exec (statement).first () is not None
         finally:
             session.close ()
 

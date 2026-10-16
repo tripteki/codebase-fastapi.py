@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Query, status, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
 from src.app.bases.app_security import security
 from src.app.dependencies.app_auth_api_dependency import get_current_user
+from src.app.dependencies.app_permission_dependency import requirePermission
 from src.app.dtos.app_dto import BatchPayloadType, Status, Description
 from src.app.repositories.app_repository import OffsetPagination, OffsetPaginationType
 from src.app.utils.app_query_parser import parseOrders, parseFilters
@@ -126,6 +127,21 @@ async def show (
     return await NotificationUserService.get (current_user.id, id)
 
 @notificationUserRouter.delete (
+    "/delete-all",
+    status_code=Status.OK,
+    dependencies=[rateLimit (times=10, seconds=60), Depends (security)],
+    response_model=BatchPayloadType,
+    responses=getStandardResponses (unauthorized=True, forbidden=True)
+)
+async def deleteAll (
+    current_user: User = Depends (requirePermission ("notification.delete"))
+) -> BatchPayloadType:
+    """
+    Delete All
+    """
+    return await NotificationUserService.deleteAll (current_user.id)
+
+@notificationUserRouter.delete (
     "/{id}",
     status_code=Status.OK,
     dependencies=[rateLimit (times=10, seconds=60), Depends (security)],
@@ -134,7 +150,7 @@ async def show (
 )
 async def delete (
     id: str,
-    current_user: User = Depends (get_current_user)
+    current_user: User = Depends (requirePermission ("notification.delete"))
 ) -> NotificationTransformerDto:
     """
     Delete

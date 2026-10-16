@@ -34,7 +34,7 @@ class AppModuleScanner:
             if not item.is_dir () or not item.name.startswith ("v") or not item.name[1:].isdigit ():
                 continue
 
-            for subPath in ["api", "graphql"]:
+            for subPath in ["api"]: # , "graphql"
                 targetPath = item / subPath
                 if not targetPath.exists ():
                     continue

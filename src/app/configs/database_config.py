@@ -29,6 +29,4 @@ class DatabaseConfig (AppConfig):
         Returns:
             str
         """
-        if not self.database_mongo_uri:
-            raise ValueError ("DATABASE_MONGO_URI is required")
-        return self.database_mongo_uri
+        return str (self.database_mongo_uri or "").strip ()

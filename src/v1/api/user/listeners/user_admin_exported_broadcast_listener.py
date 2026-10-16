@@ -1,7 +1,10 @@
+import logging
 from src.app.bases.app_event import OnEvent
 from src.app.bases.app_realtime import emitToUser
 from src.v1.api.user.events.user.admin.exported.event import UserAdminExportedEvent
 from src.v1.api.user.events.user.admin.exported_failed.event import UserAdminExportedFailedEvent
+
+logger = logging.getLogger (__name__)
 
 @OnEvent ("v1.user.admin.exported")
 async def handleUserAdminExported (event: UserAdminExportedEvent) -> None:
@@ -18,7 +21,7 @@ async def handleUserAdminExported (event: UserAdminExportedEvent) -> None:
             "fileUrl": event.fileUrl
         })
     except Exception:
-        pass
+        logger.warning ("event listener failed module=%s", __name__, exc_info=True)
 
 @OnEvent ("v1.user.admin.exported-failed")
 async def handleUserAdminExportedFailed (event: UserAdminExportedFailedEvent) -> None:
@@ -34,4 +37,4 @@ async def handleUserAdminExportedFailed (event: UserAdminExportedFailedEvent) ->
             "error": event.error
         })
     except Exception:
-        pass
+        logger.warning ("event listener failed module=%s", __name__, exc_info=True)

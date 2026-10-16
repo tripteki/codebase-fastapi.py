@@ -30,6 +30,7 @@ class NotificationAdminService:
         result = await NotificationAdminService.repository.allOffset (userId, orders, filters, page)
         data = [NotificationTransformerDto.fromNotification (item) for item in result.data]
         return OffsetPagination (
+            total=result.total,
             totalPage=result.totalPage,
             perPage=result.perPage,
             currentPage=result.currentPage,

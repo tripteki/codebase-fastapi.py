@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 import uvicorn
+from src.app.bases.app_middleware import AppLocaleMiddleware
 from src.app.configs.app_config import AppConfig
 
 class AppHttp:
@@ -33,8 +34,20 @@ class AppHttp:
         Returns:
             None
         """
+        cls.bootLocale (app)
         cls.bootCors (app)
         cls.bootCompression (app)
+
+    @classmethod
+    def bootLocale (cls, app: FastAPI) -> None:
+        """
+        Args:
+            cls
+            app (FastAPI)
+        Returns:
+            None
+        """
+        app.add_middleware (AppLocaleMiddleware)
 
     @classmethod
     def bootCors (cls, app: FastAPI) -> None:

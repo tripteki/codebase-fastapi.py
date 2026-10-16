@@ -10,7 +10,9 @@ class UserAuthDto:
         identifierKey (str)
         identifierValue (str)
         password (str)
+        remember (Optional[bool])
     """
     identifierKey: str
     identifierValue: str
     password: str
+    remember: Optional[bool] = None

@@ -9,8 +9,10 @@ class AuthConfig (AppConfig):
         jwt_algorithm (str)
         jwt_access_token_expire_minutes (int)
         jwt_refresh_token_expire_days (int)
+        jwt_session_refresh_token_expire_days (int)
         jwt_issuer (str)
         jwt_audience (str)
+        app_secret (str)
     """
     jwt_secret: str = ""
     jwt_algorithm: str = "HS256"
@@ -19,6 +21,7 @@ class AuthConfig (AppConfig):
     jwt_session_refresh_token_expire_days: int = 1
     jwt_issuer: str = ""
     jwt_audience: str = ""
+    app_secret: str = ""
 
     def jwtSecret (self) -> str:
         """

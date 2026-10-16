@@ -16,25 +16,38 @@
     },
     "error": {
       "internal_server_error": "Terjadi kesalahan pada server"
+    },
+    "upload": {
+      "too_large": "Ukuran file paling besar {size} MB.",
+      "image_type": "Pilih gambar JPG, PNG, GIF, atau WebP.",
+      "icon_type": "Pilih gambar JPG, PNG, GIF, WebP, atau ICO.",
+      "import_type": "Pilih file CSV, TXT, XLS, atau XLSX."
     }
   },
   "_v1_user": {
     "auth": {
       "invalid_credentials": "Kredensial tidak valid",
       "email_already_exists": "Email sudah terdaftar",
+      "name_already_exists": "Nama sudah terdaftar",
       "user_not_found": "Pengguna tidak ditemukan",
       "reset_link_sent": "Jika email terdaftar, tautan reset telah dikirim",
-      "missing_token": "Token tidak ditemukan",
-      "invalid_token": "Token tidak valid",
+      "missing_token": "Tidak Diizinkan",
+      "invalid_token": "Tidak Diizinkan",
       "missing_refresh_token": "Refresh token tidak ditemukan",
       "request_body_required": "Request body diperlukan",
       "verification_email_sent": "Email verifikasi telah dikirim",
       "cache_service_unavailable": "Layanan cache tidak tersedia",
       "invalid_or_expired_reset_token": "Token reset tidak valid atau telah kedaluwarsa",
+      "invalid_or_expired_verify_link": "Tautan verifikasi ini sudah kedaluwarsa atau sudah dipakai. Minta tautan baru.",
+      "email_not_verified": "Verifikasi email Anda sebelum masuk",
       "invalid_file_format": "Format file tidak valid. Hanya CSV, XLS, XLSX yang didukung.",
       "password_mismatch": "Password dan konfirmasi password harus sama",
       "password_confirmation_required": "Konfirmasi password diperlukan ketika password diberikan",
-      "password_required": "Password diperlukan ketika konfirmasi password diberikan"
+      "password_required": "Password diperlukan ketika konfirmasi password diberikan",
+      "forbidden": "Anda tidak memiliki izin untuk tindakan ini",
+      "role_forbidden": "Anda tidak dapat memberi role ini",
+      "role_self_forbidden": "Anda tidak dapat mengubah role Anda sendiri",
+      "account_locked": "Hanya superadmin yang dapat mengubah akun ini"
     },
     "admin": {
       "invalid_file_format": "Format file tidak valid. Hanya CSV, XLS, XLSX yang didukung.",
@@ -47,20 +60,33 @@
     "common": {
       "yes": "Ya",
       "no": "Tidak",
-      "start_greeting": "Halo {name},",
+      "start_greeting": "Hai {name},",
       "close_greeting": "Salam hormat,\n{appName}"
     },
+    "mail": {
+      "user_information": "Informasi pengguna",
+      "full_name": "Nama lengkap",
+      "email_address": "Alamat email",
+      "thanks": "Terima kasih",
+      "rights": "Hak cipta dilindungi."
+    },
     "account_registered": {
-      "subject": "Registrasi Akun",
-      "line1": "Terima kasih telah mendaftar dengan kami.",
-      "line2": "Silakan verifikasi alamat email Anda dengan mengklik tautan di bawah ini.",
-      "verify": "Verifikasi Email"
+      "subject": "Verifikasi email Anda",
+      "line1": "Terima kasih sudah bergabung. Tekan tombol di bawah untuk mengonfirmasi email dan menyelesaikan akun Anda.",
+      "line2": "Jika Anda tidak membuat akun ini, abaikan saja email ini.",
+      "verify": "Verifikasi email"
+    },
+    "account_email_change": {
+      "subject": "Konfirmasi email baru Anda",
+      "line1": "Anda meminta memakai alamat ini untuk akun Anda. Tekan tombol di bawah untuk mengonfirmasinya. Tautan ini berlaku selama 60 menit.",
+      "line2": "Sebelum dikonfirmasi, Anda tetap bisa masuk dengan email lama. Jika Anda tidak meminta ini, abaikan email ini.",
+      "verify": "Konfirmasi email"
     },
     "account_reset": {
-      "subject": "Reset Password",
-      "line1": "Anda meminta untuk mereset password Anda.",
-      "line2": "Klik tautan di bawah untuk mereset password Anda.",
-      "reset": "Reset Password"
+      "subject": "Atur ulang kata sandi",
+      "line1": "Kami menerima permintaan untuk mengatur ulang kata sandi Anda. Tekan tombol di bawah untuk membuat yang baru. Tautan ini berlaku selama 60 menit.",
+      "line2": "Jika Anda tidak meminta ini, abaikan email ini. Kata sandi Anda tidak berubah.",
+      "reset": "Perbarui kata sandi"
     },
     "import": {
       "started": {
@@ -83,10 +109,92 @@
       "failed": {
         "message": "Export gagal. Silakan coba lagi nanti."
       }
+    },
+    "roles": {
+      "superadmin": "Superadmin",
+      "admin": "Admin",
+      "user": "Pengguna"
+    },
+    "account_activated": {
+      "subject": "Akun Anda sudah aktif",
+      "line": "Akun Anda sudah aktif. Anda bisa masuk dan melanjutkan.",
+      "thank_you": "Terima kasih"
+    },
+    "account_deactivated": {
+      "subject": "Akun Anda dinonaktifkan",
+      "line": "Akun Anda telah dinonaktifkan. Masuk dijeda sampai admin mengaktifkannya kembali.",
+      "thank_you": "Terima kasih"
+    },
+    "registration": {
+      "verified_title": "Pendaftaran selesai",
+      "verified_body": "Email Anda sudah diverifikasi dan akun siap digunakan.",
+      "new_title": "Ada pengguna baru",
+      "new_body": "Pengguna baru mendaftar: {full_name} <{email}> · Role: {role}"
+    },
+    "account_created": {
+      "title": "Akun dibuat",
+      "body": "Admin membuat akun Anda dengan role {role}.",
+      "subject": "Akun Anda sudah siap",
+      "line1": "Admin membuat akun untuk Anda dengan role {role}. Masuk menggunakan alamat email ini.",
+      "line2": "Email ini tidak berisi kata sandi. Gunakan Lupa kata sandi untuk mengatur sendiri.",
+      "login": "Masuk",
+      "forgot": "Lupa kata sandi"
+    },
+    "role_changed": {
+      "title": "Role diubah",
+      "body": "Role Anda sekarang {role}."
+    },
+    "security": {
+      "password_subject": "Kata sandi Anda telah diubah",
+      "password_line_self": "Anda mengubah kata sandi pada {time}.",
+      "password_line_admin": "Admin {admin} mengubah kata sandi Anda pada {time}.",
+      "password_warning": "Jika Anda tidak memintanya, gunakan Lupa kata sandi dan hubungi admin.",
+      "login": "Masuk",
+      "email_old_subject": "Email akun Anda telah diubah",
+      "email_old_line": "Email akun Anda diubah menjadi {email}.",
+      "email_old_warning": "Jika Anda tidak memintanya, hubungi admin.",
+      "email_new_subject": "Email ini sekarang dipakai untuk masuk",
+      "email_new_line": "Email ini sekarang dipakai untuk masuk ke akun Anda."
     }
   },
   "_v1_notification": {
     "notification_not_found": "Notifikasi tidak ditemukan",
     "failed_to_create": "Gagal membuat notifikasi"
+  },
+  "_v1_acl": {
+    "export": {
+      "started": { "message": "Ekspor dimulai" },
+      "completed": { "message": "Ekspor selesai. Berkas siap diunduh." },
+      "failed": { "message": "Ekspor gagal. Coba lagi nanti." }
+    },
+    "import": {
+      "started": { "message": "Impor dimulai" },
+      "completed": { "message": "Impor selesai. {totalImported} diimpor, {totalSkipped} dilewati." },
+      "failed": { "message": "Impor gagal. Periksa format berkas lalu coba lagi." }
+    },
+    "permission": {
+      "name_exists": "Nama permission ini sudah dipakai",
+      "not_found": "Permission tidak ditemukan",
+      "system_permission_locked": "Permission bawaan tidak dapat diubah namanya atau dihapus"
+    },
+    "role": {
+      "name_exists": "Nama role ini sudah dipakai",
+      "not_found": "Role tidak ditemukan",
+      "permissions_not_found": "Satu atau lebih permission tidak ditemukan",
+      "system_role_locked": "Role bawaan tidak dapat diubah namanya atau dihapus",
+      "system_role_name_reserved": "Nama role ini sudah dikunci",
+      "in_use": "Role ini masih dipakai oleh {count} pengguna. Ubah role mereka dahulu."
+    }
+  },
+  "_v1_log": {
+    "activity": {
+      "not_found": "Aktivitas tidak ditemukan"
+    }
+  },
+  "_v1_setting": {
+    "forbidden": "Hanya superadmin yang dapat mengubah pengaturan sistem",
+    "key_duplicate": "Nama pengaturan tidak boleh berulang",
+    "key_required": "Nama pengaturan wajib diisi",
+    "file_invalid": "Berkas pengaturan harus berupa gambar"
   }
 }

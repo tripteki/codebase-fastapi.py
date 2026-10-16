@@ -16,7 +16,7 @@ class AppLog:
             cls
             app (FastAPI)
         Returns:
-            Logger
+            logging.Logger
         """
         logConfig = LogConfig.config ()
         logDict = logConfig.log ()

@@ -1,0 +1,213 @@
+{
+  "_app": {
+    "processor": {
+      "import": {
+        "missing_file": "Kandungan atau nama fail tiada",
+        "unsupported_format": "Format fail tidak disokong: {format}",
+        "empty_file": "Fail kosong atau tiada data",
+        "no_data": "Tiada data untuk disemak",
+        "missing_columns": "Lajur yang diperlukan tiada: {columns}"
+      },
+      "export": {
+        "no_data": "Tiada data untuk dieksport",
+        "unsupported_type": "Jenis eksport tidak disokong: {type}",
+        "save_failed": "Gagal menyimpan fail eksport: {path}"
+      }
+    },
+    "error": {
+      "internal_server_error": "Berlaku ralat pada pelayan"
+    },
+    "upload": {
+      "too_large": "Saiz fail mestilah {size} MB atau kurang.",
+      "image_type": "Sila pilih imej JPG, PNG, GIF atau WebP.",
+      "icon_type": "Sila pilih imej JPG, PNG, GIF, WebP atau ICO.",
+      "import_type": "Sila pilih fail CSV, TXT, XLS atau XLSX."
+    }
+  },
+  "_v1_user": {
+    "auth": {
+      "invalid_credentials": "E-mel atau kata laluan tidak betul.",
+      "email_already_exists": "E-mel ini sudah didaftarkan",
+      "name_already_exists": "Nama ini sudah didaftarkan",
+      "kind_required": "Pilih jenis.",
+      "user_not_found": "Pengguna tidak dijumpai",
+      "reset_link_sent": "Jika e-mel ini berdaftar, pautan untuk menetapkan semula kata laluan telah dihantar",
+      "missing_token": "Tidak Dibenarkan",
+      "invalid_token": "Tidak Dibenarkan",
+      "missing_refresh_token": "Sesi anda telah tamat. Sila log masuk semula.",
+      "request_body_required": "Sila isi borang terlebih dahulu.",
+      "verification_email_sent": "E-mel pengesahan telah dihantar",
+      "cache_service_unavailable": "Perkhidmatan sedang sibuk. Sila cuba sebentar lagi.",
+      "invalid_or_expired_reset_token": "Pautan tetapan semula ini telah tamat tempoh atau sudah digunakan. Sila minta pautan baharu.",
+      "invalid_or_expired_verify_link": "Pautan pengesahan ini telah tamat tempoh atau sudah digunakan. Sila minta pautan baharu.",
+      "invalid_file_format": "Jenis fail ini tidak disokong. Sila muat naik fail CSV, TXT, XLS atau XLSX.",
+      "password_mismatch": "Kata laluan dan pengesahan kata laluan mesti sama",
+      "password_confirmation_required": "Sila taip semula kata laluan untuk pengesahan",
+      "password_required": "Sila isi kata laluan",
+      "forbidden": "Anda tidak mempunyai kebenaran untuk tindakan ini",
+      "role_forbidden": "Anda tidak boleh memberi peranan ini",
+      "role_self_forbidden": "Anda tidak boleh menukar peranan anda sendiri",
+      "account_locked": "Hanya superadmin boleh mengubah akaun ini",
+      "email_not_verified": "Sila sahkan e-mel anda sebelum log masuk"
+    },
+    "admin": {
+      "invalid_file_format": "Jenis fail ini tidak disokong. Sila muat naik fail CSV, TXT, XLS atau XLSX.",
+      "import_started": "Import dimulakan",
+      "export_started": "Eksport dimulakan",
+      "import_failed": "Import gagal",
+      "export_failed": "Eksport gagal",
+      "internal_server_error": "Berlaku ralat pada pelayan"
+    },
+    "common": {
+      "yes": "Ya",
+      "no": "Tidak",
+      "start_greeting": "Hai {name},",
+      "close_greeting": "Salam hormat,\n{appName}"
+    },
+    "mail": {
+      "user_information": "Maklumat pengguna",
+      "full_name": "Nama penuh",
+      "email_address": "Alamat e-mel",
+      "thanks": "Terima kasih",
+      "rights": "Hak cipta terpelihara."
+    },
+    "account_registered": {
+      "subject": "Sahkan e-mel anda",
+      "line1": "Terima kasih kerana menyertai. Tekan butang di bawah untuk mengesahkan e-mel dan menyelesaikan akaun anda.",
+      "line2": "Jika anda tidak mencipta akaun ini, abaikan sahaja e-mel ini.",
+      "verify": "Sahkan e-mel"
+    },
+    "account_reset": {
+      "subject": "Tetapkan semula kata laluan",
+      "line1": "Kami menerima permintaan untuk menetapkan semula kata laluan anda. Gunakan butang di bawah untuk memilih yang baharu. Pautan ini sah selama 60 minit.",
+      "line2": "Jika anda tidak meminta ini, abaikan e-mel ini. Kata laluan anda tidak berubah.",
+      "reset": "Kemas kini kata laluan"
+    },
+    "account_email_change": {
+      "subject": "Sahkan e-mel baharu anda",
+      "line1": "Anda meminta untuk menggunakan alamat ini bagi akaun anda. Gunakan butang di bawah untuk mengesahkannya. Pautan ini sah selama 60 minit.",
+      "line2": "Sebelum disahkan, anda masih boleh log masuk dengan e-mel lama. Jika anda tidak meminta ini, abaikan e-mel ini.",
+      "verify": "Sahkan e-mel"
+    },
+    "import": {
+      "started": {
+        "message": "Import dimulakan"
+      },
+      "completed": {
+        "message": "Import selesai. {totalImported} pengguna diimport, {totalSkipped} pengguna dilangkau."
+      },
+      "failed": {
+        "message": "Import gagal. Sila semak format fail dan cuba lagi."
+      }
+    },
+    "export": {
+      "started": {
+        "message": "Eksport dimulakan"
+      },
+      "completed": {
+        "message": "Eksport selesai. Fail anda sedia untuk dimuat turun."
+      },
+      "failed": {
+        "message": "Eksport gagal. Sila cuba lagi nanti."
+      }
+    },
+    "account_activated": {
+      "line": "Akaun anda sudah aktif. Anda boleh log masuk dan teruskan.",
+      "subject": "Akaun anda sudah aktif",
+      "thank_you": "Terima kasih"
+    },
+    "account_deactivated": {
+      "line": "Akaun anda telah dinyahaktifkan. Log masuk dijeda sehingga admin mengaktifkannya semula.",
+      "subject": "Akaun anda dinyahaktifkan",
+      "thank_you": "Terima kasih"
+    },
+    "registration": {
+      "verified_title": "Pendaftaran selesai",
+      "verified_body": "E-mel anda telah disahkan dan akaun anda sedia untuk digunakan.",
+      "new_title": "Ada pengguna baharu",
+      "new_body": "Pengguna baharu mendaftar: {full_name} <{email}> · Peranan: {role}"
+    },
+    "roles": {
+      "superadmin": "Superadmin",
+      "admin": "Admin",
+      "user": "Pengguna"
+    },
+    "account_created": {
+      "title": "Akaun dicipta",
+      "body": "Admin mencipta akaun anda dengan peranan {role}.",
+      "subject": "Akaun anda sudah sedia",
+      "line1": "Admin mencipta akaun untuk anda dengan peranan {role}. Log masuk menggunakan alamat e-mel ini.",
+      "line2": "E-mel ini tidak mengandungi kata laluan. Untuk menetapkan kata laluan sendiri, gunakan Lupa kata laluan.",
+      "login": "Log masuk",
+      "forgot": "Lupa kata laluan"
+    },
+    "role_changed": {
+      "title": "Peranan ditukar",
+      "body": "Peranan anda kini {role}."
+    },
+    "security": {
+      "password_subject": "Kata laluan anda telah ditukar",
+      "password_line_self": "Kata laluan anda telah ditukar oleh anda sendiri pada {time}.",
+      "password_line_admin": "Kata laluan anda telah ditukar oleh admin {admin} pada {time}.",
+      "password_warning": "Jika anda tidak memintanya, segera gunakan Lupa kata laluan dan hubungi admin.",
+      "login": "Log masuk",
+      "email_old_subject": "E-mel akaun anda telah ditukar",
+      "email_old_line": "E-mel akaun anda telah ditukar kepada {email}.",
+      "email_old_warning": "Jika anda tidak memintanya, segera hubungi admin.",
+      "email_new_subject": "E-mel ini kini digunakan untuk log masuk",
+      "email_new_line": "E-mel ini kini digunakan untuk log masuk ke akaun anda."
+    }
+  },
+  "_v1_notification": {
+    "notification_not_found": "Pemberitahuan tidak dijumpai",
+    "failed_to_create": "Gagal mencipta pemberitahuan"
+  },
+  "_v1_acl": {
+    "export": {
+      "completed": {
+        "message": "Eksport selesai. Fail sedia untuk dimuat turun."
+      },
+      "failed": {
+        "message": "Eksport gagal. Sila cuba lagi nanti."
+      },
+      "started": {
+        "message": "Eksport dimulakan"
+      }
+    },
+    "import": {
+      "completed": {
+        "message": "Import selesai. {totalImported} diimport, {totalSkipped} dilangkau."
+      },
+      "failed": {
+        "message": "Import gagal. Semak format fail dan cuba lagi."
+      },
+      "started": {
+        "message": "Import dimulakan"
+      }
+    },
+    "permission": {
+      "name_exists": "Nama kebenaran ini sudah digunakan",
+      "not_found": "Kebenaran tidak dijumpai",
+      "system_permission_locked": "Kebenaran bawaan tidak boleh ditukar nama atau dipadam"
+    },
+    "role": {
+      "name_exists": "Nama peranan ini sudah digunakan",
+      "not_found": "Peranan tidak dijumpai",
+      "permissions_not_found": "Satu atau lebih kebenaran tidak dijumpai",
+      "system_role_locked": "Peranan bawaan tidak boleh ditukar nama atau dipadam",
+      "system_role_name_reserved": "Nama peranan ini sudah dikhaskan",
+      "in_use": "Peranan ini masih digunakan oleh {count} pengguna. Tukar peranan mereka dahulu."
+    }
+  },
+  "_v1_log": {
+    "activity": {
+      "not_found": "Aktiviti tidak dijumpai"
+    }
+  },
+  "_v1_setting": {
+    "forbidden": "Anda tidak mempunyai kebenaran untuk mengurus tetapan sistem",
+    "key_duplicate": "Nama tetapan tidak boleh berulang",
+    "key_required": "Sila isi nama tetapan.",
+    "file_invalid": "Fail tetapan mesti imej"
+  }
+}

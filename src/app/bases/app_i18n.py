@@ -1,8 +1,11 @@
+from contextvars import ContextVar, Token
 from pathlib import Path
 from typing import Dict, Optional
 from typing_extensions import Self
 import json
 from src.app.configs.app_config import AppConfig
+
+_requestLocale: ContextVar[Optional[str]] = ContextVar ("app_i18n_request_locale", default=None)
 
 class AppI18n:
     """
@@ -64,7 +67,7 @@ class AppI18n:
         """
         config = AppConfig.config ()
         if locale is None:
-            locale = cls._locale or config.locale
+            locale = _requestLocale.get () or cls._locale or config.locale
         fallbackLocale = cls._fallback_locale or config.fallback_locale
         translations = cls.loadTranslations (locale)
         fallbackTranslations = cls.loadTranslations (fallbackLocale) if fallbackLocale != locale else {}
@@ -113,7 +116,41 @@ class AppI18n:
         Returns:
             Optional[str]
         """
-        return cls._locale
+        return _requestLocale.get () or cls._locale
+
+    @classmethod
+    def resolveLocale (cls, acceptLanguage: Optional[str]) -> Optional[str]:
+        """
+        Args:
+            acceptLanguage (Optional[str])
+        Returns:
+            Optional[str]
+        """
+        for part in (acceptLanguage or "").split (","):
+            locale = part.split (";")[0].strip ().split ("-")[0].lower ()
+            if locale and (cls.langPath () / f"{locale}.json").is_file ():
+                return locale
+        return None
+
+    @classmethod
+    def useRequestLocale (cls, locale: Optional[str]) -> Token:
+        """
+        Args:
+            locale (Optional[str])
+        Returns:
+            Token
+        """
+        return _requestLocale.set (locale)
+
+    @classmethod
+    def resetRequestLocale (cls, token: Token) -> None:
+        """
+        Args:
+            token (Token)
+        Returns:
+            None
+        """
+        _requestLocale.reset (token)
 
     @classmethod
     def setFallbackLocale (cls, locale: str) -> None:

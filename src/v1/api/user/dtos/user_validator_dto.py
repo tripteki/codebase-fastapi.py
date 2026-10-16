@@ -1,6 +1,8 @@
-from typing import Optional
+from typing import Any, Literal, Optional
 from typing_extensions import Self
-from pydantic import BaseModel, EmailStr, Field, model_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
+from pydantic_core import PydanticCustomError
+from src.v1.api.user.dtos.user_role_enum import UserRoleEnum
 
 class UserIdentifierDto (BaseModel):
     """
@@ -25,14 +27,39 @@ class UserAuthDto (BaseModel):
     UserAuthDto (BaseModel)
 
     Attributes:
-        identifierKey (str)
-        identifierValue (EmailStr)
+        identifierKey (Optional[Literal["email", "name"]])
+        identifierValue (str)
         password (str)
+        remember (Optional[bool])
     """
-    identifierKey: str = Field (default="email", json_schema_extra={"example": "email"})
-    identifierValue: EmailStr = Field (..., json_schema_extra={"example": "user@mail.com"})
+    identifierKey: Optional[Literal["email", "name"]] = Field (default=None, json_schema_extra={"example": "email"})
+    identifierValue: str = Field (..., json_schema_extra={"example": "user@mail.com"})
     password: str = Field (..., min_length=8, json_schema_extra={"example": "12345678"})
     remember: Optional[bool] = Field (default=None, json_schema_extra={"example": True})
+
+    @field_validator ("identifierValue")
+    @classmethod
+    def requireIdentifierValue (cls, value: str) -> str:
+        """
+        Args:
+            value (str)
+        Returns:
+            str
+        """
+        if not value.strip ():
+            raise PydanticCustomError ("missing", "Field required")
+        return value.strip ()
+
+    def field (self) -> str:
+        """
+        Login by email or name. Without a key, a value with `@` is treated as an email.
+
+        Returns:
+            str
+        """
+        if self.identifierKey:
+            return self.identifierKey
+        return "email" if "@" in self.identifierValue else "name"
 
 class UserCreateValidatorDto (BaseModel):
     """
@@ -43,14 +70,34 @@ class UserCreateValidatorDto (BaseModel):
         email (EmailStr)
         password (str)
         password_confirmation (str)
+        role (Optional[UserRoleEnum])
+        full_name (Optional[str])
     """
     name: str = Field (..., min_length=1, max_length=255, json_schema_extra={"example": "user"})
     email: EmailStr = Field (..., json_schema_extra={"example": "user@mail.com"})
     password: str = Field (..., min_length=8, json_schema_extra={"example": "12345678"})
     password_confirmation: str = Field (..., min_length=8, json_schema_extra={"example": "12345678"})
+    role: Optional[UserRoleEnum] = Field (default=UserRoleEnum.User, json_schema_extra={"example": UserRoleEnum.User.value})
+    full_name: Optional[str] = Field (default=None, max_length=255, json_schema_extra={"example": "User Full Name"})
+
+    @model_validator (mode="before")
+    @classmethod
+    def acceptFullName (cls, data: Any) -> Any:
+        """
+        Args:
+            data (Any)
+        Returns:
+            Any
+        """
+        if isinstance (data, dict):
+            if not data.get ("name") and data.get ("full_name"):
+                data = {**data, "name": data.get ("full_name")}
+            if data.get ("role") == "":
+                data = {**data, "role": None}
+        return data
 
     @model_validator (mode="after")
-    def validate_password_confirmation (self) -> Self:
+    def validatePasswordConfirmation (self) -> Self:
         """
         Args:
             self
@@ -70,14 +117,18 @@ class UserUpdateValidatorDto (BaseModel):
         email (Optional[EmailStr])
         password (Optional[str])
         password_confirmation (Optional[str])
+        role (Optional[UserRoleEnum])
+        full_name (Optional[str])
     """
     name: Optional[str] = Field (None, min_length=1, max_length=255, json_schema_extra={"example": "user"})
+    full_name: Optional[str] = Field (None, min_length=1, max_length=255, json_schema_extra={"example": "User Full Name"})
     email: Optional[EmailStr] = Field (None, json_schema_extra={"example": "user@mail.com"})
     password: Optional[str] = Field (None, min_length=8, json_schema_extra={"example": "12345678"})
     password_confirmation: Optional[str] = Field (None, min_length=8, json_schema_extra={"example": "12345678"})
+    role: Optional[UserRoleEnum] = Field (None, json_schema_extra={"example": UserRoleEnum.User.value})
 
     @model_validator (mode="after")
-    def validate_password_confirmation (self) -> Self:
+    def validatePasswordConfirmation (self) -> Self:
         """
         Args:
             self
@@ -91,6 +142,8 @@ class UserUpdateValidatorDto (BaseModel):
             raise ValueError ("_v1_user.auth.password_confirmation_required")
         elif self.password is None and self.password_confirmation is not None:
             raise ValueError ("_v1_user.auth.password_required")
+        if self.name is None and self.full_name is not None:
+            self.name = self.full_name
         return self
 
 class UserResetterUpdateValidatorDto (BaseModel):
@@ -105,7 +158,7 @@ class UserResetterUpdateValidatorDto (BaseModel):
     password_confirmation: str = Field (..., min_length=8, json_schema_extra={"example": "12345678"})
 
     @model_validator (mode="after")
-    def validate_password_confirmation (self) -> Self:
+    def validatePasswordConfirmation (self) -> Self:
         """
         Args:
             self
@@ -128,6 +181,14 @@ class UserExportTypeDto (BaseModel):
 class UserMeUpdateValidatorDto (BaseModel):
     """
     UserMeUpdateValidatorDto (BaseModel)
+
+    Attributes:
+        name (str)
+        email (EmailStr)
+        full_name (Optional[str])
+        interests (Optional[list[str]])
+        password (Optional[str])
+        password_confirmation (Optional[str])
     """
     name: str = Field (..., min_length=2, max_length=255, json_schema_extra={"example": "user"})
     email: EmailStr = Field (..., json_schema_extra={"example": "user@mail.com"})
@@ -137,7 +198,7 @@ class UserMeUpdateValidatorDto (BaseModel):
     password_confirmation: Optional[str] = Field (None, min_length=8, max_length=16, json_schema_extra={"example": "12345678"})
 
     @model_validator (mode="after")
-    def validate_password_confirmation (self) -> Self:
+    def validatePasswordConfirmation (self) -> Self:
         """
         Args:
             self

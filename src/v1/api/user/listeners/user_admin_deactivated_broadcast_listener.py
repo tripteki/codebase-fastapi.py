@@ -1,6 +1,10 @@
+import logging
 from src.app.bases.app_event import OnEvent
 from src.app.bases.app_realtime import emitToUser
+from src.app.helpers.datetime_helper import formatAppDatetime
 from src.v1.api.user.events.user.admin.deactivated.event import UserAdminDeactivatedEvent
+
+logger = logging.getLogger (__name__)
 
 @OnEvent ("v1.user.admin.deactivated")
 async def handleUserAdminDeactivatedBroadcast (event: UserAdminDeactivatedEvent) -> None:
@@ -15,10 +19,10 @@ async def handleUserAdminDeactivatedBroadcast (event: UserAdminDeactivatedEvent)
             "id": event.id,
             "name": event.name,
             "email": event.email,
-            "email_verified_at": str (event.email_verified_at) if event.email_verified_at else None,
-            "created_at": str (event.created_at) if event.created_at else None,
-            "updated_at": str (event.updated_at) if event.updated_at else None,
-            "deleted_at": str (event.deleted_at) if event.deleted_at else None
+            "email_verified_at": formatAppDatetime (event.email_verified_at),
+            "created_at": formatAppDatetime (event.created_at),
+            "updated_at": formatAppDatetime (event.updated_at),
+            "deleted_at": formatAppDatetime (event.deleted_at)
         })
     except Exception:
-        pass
+        logger.warning ("event listener failed module=%s", __name__, exc_info=True)

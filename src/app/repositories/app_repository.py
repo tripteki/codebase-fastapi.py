@@ -21,7 +21,7 @@ class OffsetPaginationType (BaseModel):
         limitPage (Optional[int])
     """
     currentPage: Optional[int] = Field (None, ge=1)
-    limitPage: Optional[int] = Field (None, ge=1, le=100)
+    limitPage: Optional[int] = Field (None, ge=1, le=500)
 
 class CursorPaginationType (BaseModel):
     """
@@ -41,6 +41,7 @@ class OffsetPagination (BaseModel, Generic[T]):
     OffsetPagination (BaseModel, Generic)
 
     Attributes:
+        total (int)
         totalPage (int)
         perPage (int)
         currentPage (int)
@@ -50,6 +51,7 @@ class OffsetPagination (BaseModel, Generic[T]):
         lastPage (int)
         data (List[T])
     """
+    total: int
     totalPage: int
     perPage: int
     currentPage: int

@@ -6,6 +6,8 @@ from src.app.bases.app_mail import AppMail
 from src.app.configs.app_config import AppConfig
 from src.v1.api.user.events.user.admin.deactivated.event import UserAdminDeactivatedEvent
 
+logger = logging.getLogger (__name__)
+
 @OnEvent ("v1.user.admin.deactivated")
 async def handleUserAdminDeactivated (event: UserAdminDeactivatedEvent) -> None:
     """
@@ -23,18 +25,20 @@ async def handleUserAdminDeactivated (event: UserAdminDeactivatedEvent) -> None:
             "start_greeting": i18n.t ("_v1_user.common.start_greeting", args={"name": event.name}),
             "line": i18n.t ("_v1_user.account_deactivated.line"),
             "thank_you": i18n.t ("_v1_user.account_deactivated.thank_you"),
+            "title": subject,
+            "user_name": event.name,
+            "user_email": event.email,
         }
         if appConfig.app_env != "production":
-            logger = logging.getLogger (__name__)
             logger.info ("=" * 70)
-            logger.info (f"User Deactivated Email")
+            logger.info ("User Deactivated Email")
             logger.info ("=" * 70)
             logger.info (f"To: {event.email}")
             logger.info (f"Subject: {subject}")
-            logger.info (f"Template: user/auth/account.html")
-            logger.info (f"Context:")
+            logger.info ("Template: user/auth/account.html")
+            logger.info ("Context:")
             logger.info (json.dumps (context, indent=2, ensure_ascii=False))
-            logger.info (f"Event Data:")
+            logger.info ("Event Data:")
             logger.info (json.dumps ({
                 "id": event.id,
                 "name": event.name,
@@ -45,12 +49,16 @@ async def handleUserAdminDeactivated (event: UserAdminDeactivatedEvent) -> None:
             }, indent=2, ensure_ascii=False))
             logger.info ("=" * 70)
             return
-        await AppMail.sendMail (
+        sent = await AppMail.sendMail (
             to=event.email,
             subject=subject,
             template="user/auth/account.html",
             context=context
         )
+        if not sent:
+            logger.warning (
+                "mail send failed to=%s template=user/auth/account.html",
+                event.email,
+            )
     except Exception as e:
-        logger = logging.getLogger (__name__)
         logger.error (f"Error sending user deactivated email to {event.email}: {e}", exc_info=True)
